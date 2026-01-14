@@ -21,8 +21,12 @@ export SANDBOX_DIR=${HOLYLABS}/Sandbox     # Testing/scratch
 export UV_CACHE_DIR=${HOLYLABS}/.uv_cache
 
 # AWS configuration
-export AWS_PROFILE=visionlab
-export AWS_DEFAULT_REGION=us-east-1
+# Ask George to send you your credentials; keep these secret always, never commit to any public repo.
+# Bots crawl and find exposed credentials - it will cost you tens of thousands of dollars
+# and could bork the entire lab infrastructure.
+export AWS_ACCESS_KEY_ID=
+export AWS_SECRET_ACCESS_KEY=
+export AWS_REGION=us-east-1
 
 # Convenience aliases
 alias cdh='cd $HOLYLABS'

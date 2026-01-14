@@ -68,18 +68,19 @@ source ~/.bashrc
 
 **What each variable does:**
 
-| Variable             | Purpose                                           |
-| -------------------- | ------------------------------------------------- |
-| `LAB`                | Your lab affiliation, used in storage paths       |
-| `HOLYLABS`           | Root of your holylabs directory                   |
-| `NETSCRATCH`         | Your netscratch directory (temp files, ephemeral) |
-| `TIER1`              | Your tier1 directory (large datasets, persistent) |
-| `PROJECT_DIR`        | Where your git repos live                         |
-| `BUCKET_DIR`         | Where S3 buckets are mounted                      |
-| `SANDBOX_DIR`        | For testing and scratch work                      |
-| `UV_CACHE_DIR`       | Where uv stores downloaded packages               |
-| `AWS_PROFILE`        | AWS credentials profile name                      |
-| `AWS_DEFAULT_REGION` | Default AWS region for CLI commands               |
+| Variable               | Purpose                                           |
+| ---------------------- | ------------------------------------------------- |
+| `LAB`                  | Your lab affiliation, used in storage paths       |
+| `HOLYLABS`             | Root of your holylabs directory                   |
+| `NETSCRATCH`           | Your netscratch directory (temp files, ephemeral) |
+| `TIER1`                | Your tier1 directory (large datasets, persistent) |
+| `PROJECT_DIR`          | Where your git repos live                         |
+| `BUCKET_DIR`           | Where S3 buckets are mounted                      |
+| `SANDBOX_DIR`          | For testing and scratch work                      |
+| `UV_CACHE_DIR`         | Where uv stores downloaded packages               |
+| `AWS_ACCESS_KEY_ID`    | Your AWS access key (get from George)             |
+| `AWS_SECRET_ACCESS_KEY`| Your AWS secret key (get from George)             |
+| `AWS_REGION`           | AWS region (us-east-1)                            |
 
 ### 2. Create Holylabs Folder Structure
 
@@ -353,16 +354,17 @@ uv cache prune             # Clean up old cached packages
 ### Standard Environment Variables
 
 ```bash
-$LAB              # Your lab: alvarez_lab or konkle_lab
-$HOLYLABS         # /n/holylabs/LABS/${LAB}/Users/$USER
-$NETSCRATCH       # /n/netscratch/${LAB}/Lab/Users/$USER
-$TIER1            # /n/alvarez_lab_tier1/Users/$USER
-$PROJECT_DIR      # ${HOLYLABS}/Projects
-$BUCKET_DIR       # ${HOLYLABS}/Buckets
-$SANDBOX_DIR      # ${HOLYLABS}/Sandbox
-$UV_CACHE_DIR     # ${HOLYLABS}/.uv_cache
-$AWS_PROFILE      # AWS credentials profile (visionlab)
-$AWS_DEFAULT_REGION  # us-east-1
+$LAB                    # Your lab: alvarez_lab or konkle_lab
+$HOLYLABS               # /n/holylabs/LABS/${LAB}/Users/$USER
+$NETSCRATCH             # /n/netscratch/${LAB}/Lab/Users/$USER
+$TIER1                  # /n/alvarez_lab_tier1/Users/$USER
+$PROJECT_DIR            # ${HOLYLABS}/Projects
+$BUCKET_DIR             # ${HOLYLABS}/Buckets
+$SANDBOX_DIR            # ${HOLYLABS}/Sandbox
+$UV_CACHE_DIR           # ${HOLYLABS}/.uv_cache
+$AWS_ACCESS_KEY_ID      # Your AWS access key (keep secret!)
+$AWS_SECRET_ACCESS_KEY  # Your AWS secret key (keep secret!)
+$AWS_REGION             # us-east-1
 ```
 
 ### Convenience Aliases
@@ -374,7 +376,6 @@ cdt   # cd to tier1
 cdp   # cd to projects
 cdb   # cd to buckets
 cds   # cd to sandbox
-cdp   # cd to project directory
 ```
 
 ### Sharing Projects
