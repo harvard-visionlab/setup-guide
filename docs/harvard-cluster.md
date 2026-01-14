@@ -47,9 +47,10 @@ export PROJECT_DIR=${HOLYLABS}/Projects    # Git repos go here
 export BUCKET_DIR=${HOLYLABS}/Buckets      # S3 bucket mounts
 export SANDBOX_DIR=${HOLYLABS}/Sandbox     # Testing/scratch
 
-# uv (Python package manager) cache location
-# On holylabs so it can hardlink to project .venvs (same filesystem)
+# uv (Python package manager) configuration
+# On holylabs so hardlinks work (same filesystem as projects)
 export UV_CACHE_DIR=${HOLYLABS}/.uv_cache
+export UV_TOOL_DIR=${HOLYLABS}/.uv_tools
 
 # AWS configuration
 # ask George to send you your credentials; keep these secret always, never commit these to any public repo
@@ -78,6 +79,7 @@ source ~/.bashrc
 | `BUCKET_DIR`            | Where S3 buckets are mounted                      |
 | `SANDBOX_DIR`           | For testing and scratch work                      |
 | `UV_CACHE_DIR`          | Where uv stores downloaded packages               |
+| `UV_TOOL_DIR`           | Where uv tool installs CLI tools (e.g., s5cmd)    |
 | `AWS_ACCESS_KEY_ID`     | Your AWS access key (get from George)             |
 | `AWS_SECRET_ACCESS_KEY` | Your AWS secret key (get from George)             |
 | `AWS_REGION`            | AWS region (us-east-1)                            |
@@ -354,21 +356,34 @@ All lab outputs (model weights, analysis results, figures) should be stored in S
 
 ### 1. Install AWS CLI Tools
 
-Install `awscli` and `s5cmd` globally using uv:
+**AWS CLI v2** (recommended - more features, actively developed):
+
+AWS CLI v2 is distributed as a standalone binary, not a Python package, so we install it directly:
 
 ```bash
-uv tool install awscli
+cd /tmp
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip -o awscliv2.zip
+./aws/install -i $HOLYLABS/.aws-cli -b $HOME/.local/bin --update
+```
+
+This installs the CLI to holylabs (saves home quota) and creates symlinks in `~/.local/bin`.
+
+**s5cmd** (fast parallel S3 operations):
+
+```bash
 uv tool install s5cmd
 ```
 
-Verify installation:
+Verify both are installed:
 
 ```bash
-aws --version
-s5cmd version
-```
+# Clear bash's command cache if you had old versions
+hash -r
 
-These tools are now available in any terminal session without activating a specific environment.
+aws --version   # Should show v2.x
+s5cmd version   # Should show v2.x
+```
 
 ### 2. Verify AWS Access
 
@@ -621,6 +636,7 @@ $PROJECT_DIR            # ${HOLYLABS}/Projects
 $BUCKET_DIR             # ${HOLYLABS}/Buckets
 $SANDBOX_DIR            # ${HOLYLABS}/Sandbox
 $UV_CACHE_DIR           # ${HOLYLABS}/.uv_cache
+$UV_TOOL_DIR            # ${HOLYLABS}/.uv_tools
 $AWS_ACCESS_KEY_ID      # Your AWS access key (keep secret!)
 $AWS_SECRET_ACCESS_KEY  # Your AWS secret key (keep secret!)
 $AWS_REGION             # us-east-1

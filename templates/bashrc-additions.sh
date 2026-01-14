@@ -16,9 +16,10 @@ export PROJECT_DIR=${HOLYLABS}/Projects    # Git repos go here
 export BUCKET_DIR=${HOLYLABS}/Buckets      # S3 bucket mounts
 export SANDBOX_DIR=${HOLYLABS}/Sandbox     # Testing/scratch
 
-# uv (Python package manager) cache location
-# On holylabs so it can hardlink to project .venvs (same filesystem)
+# uv (Python package manager) configuration
+# On holylabs so hardlinks work (same filesystem as projects)
 export UV_CACHE_DIR=${HOLYLABS}/.uv_cache
+export UV_TOOL_DIR=${HOLYLABS}/.uv_tools
 
 # AWS configuration
 # Ask George to send you your credentials; keep these secret always, never commit to any public repo.
