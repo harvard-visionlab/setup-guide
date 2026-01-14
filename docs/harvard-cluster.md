@@ -451,7 +451,10 @@ uv add fsspec s3fs ipykernel
 **Basic fsspec usage:**
 
 ```python
+import os
 import fsspec
+
+USER = os.getenv('USER')
 
 # Create S3 filesystem
 fs = fsspec.filesystem('s3')
@@ -459,14 +462,27 @@ fs = fsspec.filesystem('s3')
 # List bucket contents
 fs.ls('visionlab-members')
 
-# Read a file directly
-with fs.open('s3://visionlab-members/path/to/file.json') as f:
-    data = f.read()
-
 # Write a file
-with fs.open('s3://visionlab-members/myuser/test.txt', 'w') as f:
+with fs.open(f's3://visionlab-members/{USER}/testing123/test.txt', 'w') as f:
     f.write('Hello from Python!')
+
+# Read a file directly
+with fs.open(f's3://visionlab-members/{USER}/testing123/test.txt') as f:
+    data = f.read()
+print(data)
 ```
+
+**Verify permissions:**
+
+```python
+# List your files (should work)
+fs.ls(f'visionlab-members/{USER}/')
+
+# List another user's files (should error - no permission)
+fs.ls('visionlab-members/someotheruser/')
+```
+
+Each user can only read/write within their own directory in `visionlab-members`.
 
 **Works with pandas:**
 
