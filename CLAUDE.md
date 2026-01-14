@@ -25,7 +25,7 @@ We are building a comprehensive setup guide covering multiple environments (Harv
 ### TODO
 
 #### Harvard Cluster Setup
-- [ ] SLURM job submission basics
+- [x] SLURM job submission basics
 - [ ] Module loading (if needed)
 
 #### Other Environments
