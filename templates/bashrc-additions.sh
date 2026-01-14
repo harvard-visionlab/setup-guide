@@ -1,26 +1,33 @@
 # ==============================================================================
-# Vision Lab Standard Configuration
-# Added by harvard-visionlab/setup
+# Vision Lab Configuration
 # ==============================================================================
 
-# Lab affiliation (determines storage paths)
-# Options: alvarez_lab, konkle_lab
-export LAB=__LAB_PLACEHOLDER__
+# Lab affiliation - determines storage paths
+# Set to your primary advisor's lab: alvarez_lab or konkle_lab
+export LAB=alvarez_lab
 
-# Standard directory shortcuts
+# Storage roots
 export HOLYLABS=/n/holylabs/LABS/${LAB}/Users/$USER
 export NETSCRATCH=/n/netscratch/${LAB}/Lab/Users/$USER
 export TIER1=/n/alvarez_lab_tier1/Users/$USER
 
-# uv (Python package manager) configuration
-# Cache on holylabs enables hardlinks for fast installs
+# Holylabs folder structure
+export PROJECT_DIR=${HOLYLABS}/Projects    # Git repos go here
+export BUCKET_DIR=${HOLYLABS}/Buckets      # S3 bucket mounts
+export SANDBOX_DIR=${HOLYLABS}/Sandbox     # Testing/scratch
+
+# uv (Python package manager) cache location
+# On holylabs so it can hardlink to project .venvs (same filesystem)
 export UV_CACHE_DIR=${HOLYLABS}/.uv_cache
+
+# AWS configuration
+export AWS_PROFILE=visionlab
+export AWS_DEFAULT_REGION=us-east-1
 
 # Convenience aliases
 alias cdh='cd $HOLYLABS'
 alias cdn='cd $NETSCRATCH'
 alias cdt='cd $TIER1'
-
-# ==============================================================================
-# End Vision Lab Configuration
-# ==============================================================================
+alias cdp='cd $PROJECT_DIR'
+alias cdb='cd $BUCKET_DIR'
+alias cds='cd $SANDBOX_DIR'

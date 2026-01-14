@@ -20,53 +20,152 @@ The cluster has several storage tiers with different characteristics:
 
 ### 1. Configure Your Shell
 
-Run the setup script to configure your `~/.bashrc` with lab-standard settings:
+Add the following to your `~/.bashrc`. Open it with your preferred editor:
 
 ```bash
-# Download and review the script first
-curl -O https://raw.githubusercontent.com/harvard-visionlab/setup/main/scripts/setup-bashrc.sh
-less setup-bashrc.sh  # Review what it does
-
-# Run it (you'll be prompted for your lab affiliation)
-bash setup-bashrc.sh
-source ~/.bashrc
+nano ~/.bashrc  # or vim, emacs, etc.
 ```
 
-Or manually add to your `~/.bashrc`:
+Add these lines at the end:
 
 ```bash
-# Lab affiliation (used in storage paths)
-# Use your primary advisor's lab: alvarez_lab or konkle_lab
+# ==============================================================================
+# Vision Lab Configuration
+# ==============================================================================
+
+# Lab affiliation - determines storage paths
+# Set to your primary advisor's lab: alvarez_lab or konkle_lab
 export LAB=alvarez_lab
 
-# Standard directory shortcuts
+# Storage roots
 export HOLYLABS=/n/holylabs/LABS/${LAB}/Users/$USER
 export NETSCRATCH=/n/netscratch/${LAB}/Lab/Users/$USER
 export TIER1=/n/alvarez_lab_tier1/Users/$USER
 
-# uv cache location (on holylabs for hardlink support)
+# Holylabs folder structure
+export PROJECT_DIR=${HOLYLABS}/Projects    # Git repos go here
+export BUCKET_DIR=${HOLYLABS}/Buckets      # S3 bucket mounts
+export SANDBOX_DIR=${HOLYLABS}/Sandbox     # Testing/scratch
+
+# uv (Python package manager) cache location
+# On holylabs so it can hardlink to project .venvs (same filesystem)
 export UV_CACHE_DIR=${HOLYLABS}/.uv_cache
+
+# AWS configuration
+export AWS_PROFILE=visionlab
+export AWS_DEFAULT_REGION=us-east-1
+
+# Convenience aliases
+alias cdh='cd $HOLYLABS'
+alias cdn='cd $NETSCRATCH'
+alias cdt='cd $TIER1'
+alias cdp='cd $PROJECT_DIR'
+alias cdb='cd $BUCKET_DIR'
+alias cds='cd $SANDBOX_DIR'
 ```
 
-Then reload:
+Save and reload:
 
 ```bash
 source ~/.bashrc
 ```
 
-### 2. Set Up Home Directory Symlinks
+**What each variable does:**
 
-Your home directory has a 100GB quota. Many applications create large hidden cache directories that can quickly fill this up. We symlink these to netscratch (ephemeral, ok to lose) or holylabs (persistent).
+| Variable | Purpose |
+|----------|---------|
+| `LAB` | Your lab affiliation, used in storage paths |
+| `HOLYLABS` | Root of your holylabs directory |
+| `NETSCRATCH` | Your netscratch directory (temp files, ephemeral) |
+| `TIER1` | Your tier1 directory (large datasets, persistent) |
+| `PROJECT_DIR` | Where your git repos live |
+| `BUCKET_DIR` | Where S3 buckets are mounted |
+| `SANDBOX_DIR` | For testing and scratch work |
+| `UV_CACHE_DIR` | Where uv stores downloaded packages |
+| `AWS_PROFILE` | AWS credentials profile name |
+| `AWS_DEFAULT_REGION` | Default AWS region for CLI commands |
 
-Run the setup script:
+### 2. Create Holylabs Folder Structure
+
+Set up the recommended folder organization:
 
 ```bash
-bash <(curl -s https://raw.githubusercontent.com/harvard-visionlab/setup/main/scripts/setup-symlinks.sh)
+mkdir -p $HOLYLABS/{Projects,Buckets,Sandbox}
 ```
 
-See [Home Directory Symlinks](#home-directory-symlinks) below for details on what gets symlinked.
+| Folder | Purpose |
+|--------|---------|
+| `Projects/` | Git repositories. All code should be version controlled and regularly pushed to GitHub. |
+| `Buckets/` | S3 bucket mounts (see AWS setup section). |
+| `Sandbox/` | Testing, experiments, organize however you like. |
 
-### 3. Verify Storage Access
+### 3. Set Up Home Directory Symlinks
+
+Your home directory has a 100GB quota. Many applications create large hidden cache directories that can quickly fill this up. We symlink these to netscratch (ephemeral caches) or tier1 (persistent environments).
+
+First, create your netscratch user directory if it doesn't exist:
+
+```bash
+mkdir -p /n/netscratch/${LAB}/Lab/Users/$USER
+```
+
+Now create the symlinks. For each directory below, we'll:
+1. Move any existing data to the target location
+2. Create a symlink from home to the target
+
+**~/.cache → netscratch** (general caches - pip, huggingface, torch hub, etc.):
+
+```bash
+# Move existing cache if present
+if [ -d ~/.cache ] && [ ! -L ~/.cache ]; then
+    mv ~/.cache /n/netscratch/${LAB}/Lab/Users/$USER/.cache
+fi
+# Create target directory and symlink
+mkdir -p /n/netscratch/${LAB}/Lab/Users/$USER/.cache
+ln -sf /n/netscratch/${LAB}/Lab/Users/$USER/.cache ~/.cache
+```
+
+**~/.conda → tier1** (conda environments - persistent, takes time to rebuild):
+
+```bash
+# Move existing conda if present
+if [ -d ~/.conda ] && [ ! -L ~/.conda ]; then
+    mv ~/.conda /n/alvarez_lab_tier1/Users/$USER/.conda
+fi
+# Create target directory and symlink
+mkdir -p /n/alvarez_lab_tier1/Users/$USER/.conda
+ln -sf /n/alvarez_lab_tier1/Users/$USER/.conda ~/.conda
+```
+
+**~/.nv → netscratch** (NVIDIA/CUDA compilation cache):
+
+```bash
+if [ -d ~/.nv ] && [ ! -L ~/.nv ]; then
+    rm -rf ~/.nv  # Safe to delete, will regenerate
+fi
+mkdir -p /n/netscratch/${LAB}/Lab/Users/$USER/.nv
+ln -sf /n/netscratch/${LAB}/Lab/Users/$USER/.nv ~/.nv
+```
+
+**~/.triton → netscratch** (Triton GPU compiler cache):
+
+```bash
+if [ -d ~/.triton ] && [ ! -L ~/.triton ]; then
+    rm -rf ~/.triton  # Safe to delete, will regenerate
+fi
+mkdir -p /n/netscratch/${LAB}/Lab/Users/$USER/.triton
+ln -sf /n/netscratch/${LAB}/Lab/Users/$USER/.triton ~/.triton
+```
+
+Verify your symlinks:
+
+```bash
+ls -la ~/.cache ~/.conda ~/.nv ~/.triton
+```
+
+You should see arrows (`->`) pointing to the target locations.
+
+### 4. Verify Storage Access
 
 Run these commands to confirm you have access to the required storage locations:
 
@@ -133,7 +232,7 @@ echo $UV_CACHE_DIR
 ### 3. Create Your First Project
 
 ```bash
-cd $HOLYLABS
+cd $PROJECT_DIR
 mkdir my-project && cd my-project
 uv init
 uv add numpy torch  # Add whatever packages you need
@@ -212,7 +311,7 @@ uv add ipykernel
 
 ## Home Directory Symlinks
 
-These directories commonly cause home directory bloat and should be symlinked:
+Summary of symlinks set up in [Initial Setup](#2-set-up-home-directory-symlinks):
 
 ### Symlinked to Netscratch (ephemeral, ok to lose)
 
@@ -221,7 +320,6 @@ These directories commonly cause home directory bloat and should be symlinked:
 | `~/.cache`  | General application caches (pip, huggingface, etc.) | 10-100+ GB   |
 | `~/.nv`     | NVIDIA/CUDA compilation cache                       | 10-100+ MB   |
 | `~/.triton` | Triton GPU compiler cache                           | 10-500+ MB   |
-| `~/.npm`    | npm package cache                                   | 10-100+ MB   |
 
 ### Symlinked to Tier1 (persistent)
 
@@ -236,6 +334,7 @@ These directories commonly cause home directory bloat and should be symlinked:
 | `~/.ssh`                  | SSH keys            |
 | `~/.config`               | Application configs |
 | `~/.bashrc`, `~/.profile` | Shell config        |
+| `~/.jupyter`              | Jupyter config      |
 
 ---
 
@@ -254,14 +353,31 @@ uv lock                    # Update the lockfile
 uv cache prune             # Clean up old cached packages
 ```
 
-### Standard Path Variables
+### Standard Environment Variables
 
 ```bash
-$LAB          # Your lab: alvarez_lab or konkle_lab
-$HOLYLABS     # /n/holylabs/LABS/${LAB}/Users/$USER
-$NETSCRATCH   # /n/netscratch/${LAB}/Lab/Users/$USER
-$TIER1        # /n/alvarez_lab_tier1/Users/$USER
-$UV_CACHE_DIR # ${HOLYLABS}/.uv_cache
+$LAB              # Your lab: alvarez_lab or konkle_lab
+$HOLYLABS         # /n/holylabs/LABS/${LAB}/Users/$USER
+$NETSCRATCH       # /n/netscratch/${LAB}/Lab/Users/$USER
+$TIER1            # /n/alvarez_lab_tier1/Users/$USER
+$PROJECT_DIR      # ${HOLYLABS}/Projects
+$BUCKET_DIR       # ${HOLYLABS}/Buckets
+$SANDBOX_DIR      # ${HOLYLABS}/Sandbox
+$UV_CACHE_DIR     # ${HOLYLABS}/.uv_cache
+$AWS_PROFILE      # AWS credentials profile (visionlab)
+$AWS_DEFAULT_REGION  # us-east-1
+```
+
+### Convenience Aliases
+
+```bash
+cdh   # cd to holylabs
+cdn   # cd to netscratch
+cdt   # cd to tier1
+cdp   # cd to projects
+cdb   # cd to buckets
+cds   # cd to sandbox
+cdp   # cd to project directory
 ```
 
 ### Sharing Projects
