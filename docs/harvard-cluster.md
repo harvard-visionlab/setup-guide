@@ -52,16 +52,12 @@ export SANDBOX_DIR=${HOLYLABS}/Sandbox     # Testing/scratch
 export UV_CACHE_DIR=${HOLYLABS}/.uv_cache
 
 # AWS configuration
-export AWS_PROFILE=visionlab
-export AWS_DEFAULT_REGION=us-east-1
-
-# Convenience aliases
-alias cdh='cd $HOLYLABS'
-alias cdn='cd $NETSCRATCH'
-alias cdt='cd $TIER1'
-alias cdp='cd $PROJECT_DIR'
-alias cdb='cd $BUCKET_DIR'
-alias cds='cd $SANDBOX_DIR'
+# ask George to send you your credentials; keep these secret always, never commit these to any public repo
+# bots will craw; and find these credentials, so if you make them publically accessible, it will cost you
+# potentially tens of thousands of dollars, and could bork the entire lab infrastructure
+export AWS_ACCESS_KEY_ID=
+export AWS_SECRET_ACCESS_KEY=
+export AWS_REGION=us-east-1
 ```
 
 Save and reload:
@@ -72,18 +68,18 @@ source ~/.bashrc
 
 **What each variable does:**
 
-| Variable | Purpose |
-|----------|---------|
-| `LAB` | Your lab affiliation, used in storage paths |
-| `HOLYLABS` | Root of your holylabs directory |
-| `NETSCRATCH` | Your netscratch directory (temp files, ephemeral) |
-| `TIER1` | Your tier1 directory (large datasets, persistent) |
-| `PROJECT_DIR` | Where your git repos live |
-| `BUCKET_DIR` | Where S3 buckets are mounted |
-| `SANDBOX_DIR` | For testing and scratch work |
-| `UV_CACHE_DIR` | Where uv stores downloaded packages |
-| `AWS_PROFILE` | AWS credentials profile name |
-| `AWS_DEFAULT_REGION` | Default AWS region for CLI commands |
+| Variable             | Purpose                                           |
+| -------------------- | ------------------------------------------------- |
+| `LAB`                | Your lab affiliation, used in storage paths       |
+| `HOLYLABS`           | Root of your holylabs directory                   |
+| `NETSCRATCH`         | Your netscratch directory (temp files, ephemeral) |
+| `TIER1`              | Your tier1 directory (large datasets, persistent) |
+| `PROJECT_DIR`        | Where your git repos live                         |
+| `BUCKET_DIR`         | Where S3 buckets are mounted                      |
+| `SANDBOX_DIR`        | For testing and scratch work                      |
+| `UV_CACHE_DIR`       | Where uv stores downloaded packages               |
+| `AWS_PROFILE`        | AWS credentials profile name                      |
+| `AWS_DEFAULT_REGION` | Default AWS region for CLI commands               |
 
 ### 2. Create Holylabs Folder Structure
 
@@ -93,11 +89,11 @@ Set up the recommended folder organization:
 mkdir -p $HOLYLABS/{Projects,Buckets,Sandbox}
 ```
 
-| Folder | Purpose |
-|--------|---------|
+| Folder      | Purpose                                                                                 |
+| ----------- | --------------------------------------------------------------------------------------- |
 | `Projects/` | Git repositories. All code should be version controlled and regularly pushed to GitHub. |
-| `Buckets/` | S3 bucket mounts (see AWS setup section). |
-| `Sandbox/` | Testing, experiments, organize however you like. |
+| `Buckets/`  | S3 bucket mounts (see AWS setup section).                                               |
+| `Sandbox/`  | Testing, experiments, organize however you like.                                        |
 
 ### 3. Set Up Home Directory Symlinks
 
@@ -110,6 +106,7 @@ mkdir -p /n/netscratch/${LAB}/Lab/Users/$USER
 ```
 
 Now create the symlinks. For each directory below, we'll:
+
 1. Move any existing data to the target location
 2. Create a symlink from home to the target
 
