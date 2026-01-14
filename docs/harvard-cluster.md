@@ -433,18 +433,22 @@ s5cmd cp local_file.pt s3://visionlab-members/$USER/models/
 s5cmd sync ./results s3://visionlab-members/$USER/experiment1/results/
 ```
 
-### 4. Python Access (fsspec/boto3)
+### 4. Python Access (fsspec)
 
-Create a test project to explore Python S3 access:
+For Python S3 access, we use `fsspec` with the `s3fs` backend. This provides a Pythonic filesystem interface that works seamlessly with pandas, xarray, and other data tools.
+
+**Note:** Don't install `boto3` alongside `s3fs` - they have conflicting dependencies. Use `s3fs` for Python access and the AWS CLI for shell operations.
+
+Create a test project:
 
 ```bash
 cd $SANDBOX_DIR
 mkdir s3-test && cd s3-test
 uv init
-uv add fsspec s3fs boto3 ipykernel
+uv add fsspec s3fs ipykernel
 ```
 
-**Using fsspec (recommended - unified interface):**
+**Basic fsspec usage:**
 
 ```python
 import fsspec
@@ -462,30 +466,34 @@ with fs.open('s3://visionlab-members/path/to/file.json') as f:
 # Write a file
 with fs.open('s3://visionlab-members/myuser/test.txt', 'w') as f:
     f.write('Hello from Python!')
-
-# Works with pandas too
-import pandas as pd
-df = pd.read_csv('s3://visionlab-members/path/to/data.csv')
-df.to_parquet('s3://visionlab-members/myuser/data.parquet')
 ```
 
-**Using boto3 (lower-level, more control):**
+**Works with pandas:**
 
 ```python
-import boto3
+import pandas as pd
 
-s3 = boto3.client('s3')
+# Read directly from S3
+df = pd.read_csv('s3://visionlab-members/path/to/data.csv')
+df = pd.read_parquet('s3://visionlab-members/path/to/data.parquet')
 
-# List objects
-response = s3.list_objects_v2(Bucket='visionlab-members', Prefix='myuser/')
-for obj in response.get('Contents', []):
-    print(obj['Key'])
+# Write directly to S3
+df.to_parquet('s3://visionlab-members/myuser/output.parquet')
+```
 
-# Upload file
-s3.upload_file('local_file.pt', 'visionlab-members', 'myuser/models/model.pt')
+**Works with PyTorch:**
 
-# Download file
-s3.download_file('visionlab-members', 'myuser/models/model.pt', 'local_model.pt')
+```python
+import torch
+import fsspec
+
+# Save model to S3
+with fsspec.open('s3://visionlab-members/myuser/model.pt', 'wb') as f:
+    torch.save(model.state_dict(), f)
+
+# Load model from S3
+with fsspec.open('s3://visionlab-members/myuser/model.pt', 'rb') as f:
+    model.load_state_dict(torch.load(f))
 ```
 
 Clean up test project:
