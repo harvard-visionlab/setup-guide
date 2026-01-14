@@ -68,19 +68,19 @@ source ~/.bashrc
 
 **What each variable does:**
 
-| Variable               | Purpose                                           |
-| ---------------------- | ------------------------------------------------- |
-| `LAB`                  | Your lab affiliation, used in storage paths       |
-| `HOLYLABS`             | Root of your holylabs directory                   |
-| `NETSCRATCH`           | Your netscratch directory (temp files, ephemeral) |
-| `TIER1`                | Your tier1 directory (large datasets, persistent) |
-| `PROJECT_DIR`          | Where your git repos live                         |
-| `BUCKET_DIR`           | Where S3 buckets are mounted                      |
-| `SANDBOX_DIR`          | For testing and scratch work                      |
-| `UV_CACHE_DIR`         | Where uv stores downloaded packages               |
-| `AWS_ACCESS_KEY_ID`    | Your AWS access key (get from George)             |
-| `AWS_SECRET_ACCESS_KEY`| Your AWS secret key (get from George)             |
-| `AWS_REGION`           | AWS region (us-east-1)                            |
+| Variable                | Purpose                                           |
+| ----------------------- | ------------------------------------------------- |
+| `LAB`                   | Your lab affiliation, used in storage paths       |
+| `HOLYLABS`              | Root of your holylabs directory                   |
+| `NETSCRATCH`            | Your netscratch directory (temp files, ephemeral) |
+| `TIER1`                 | Your tier1 directory (large datasets, persistent) |
+| `PROJECT_DIR`           | Where your git repos live                         |
+| `BUCKET_DIR`            | Where S3 buckets are mounted                      |
+| `SANDBOX_DIR`           | For testing and scratch work                      |
+| `UV_CACHE_DIR`          | Where uv stores downloaded packages               |
+| `AWS_ACCESS_KEY_ID`     | Your AWS access key (get from George)             |
+| `AWS_SECRET_ACCESS_KEY` | Your AWS secret key (get from George)             |
+| `AWS_REGION`            | AWS region (us-east-1)                            |
 
 ### 2. Create Holylabs Folder Structure
 
@@ -93,7 +93,7 @@ mkdir -p $HOLYLABS/{Projects,Buckets,Sandbox}
 | Folder      | Purpose                                                                                 |
 | ----------- | --------------------------------------------------------------------------------------- |
 | `Projects/` | Git repositories. All code should be version controlled and regularly pushed to GitHub. |
-| `Buckets/`  | S3 bucket mounts (see AWS setup section).                                               |
+| `Buckets/`  | S3 bucket mounts (see AWS setup section). All outputs should be stored in s3 buckets.   |
 | `Sandbox/`  | Testing, experiments, organize however you like.                                        |
 
 ### 3. Set Up Home Directory Symlinks
