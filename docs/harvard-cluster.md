@@ -671,9 +671,9 @@ print("Weights restored successfully!")
 
 You now know how to read and write files to S3 from Python. **S3 is your primary storage location** - all outputs (model weights, analysis results, figures) should be saved here. Files in S3 are:
 
-- Backed up with 99.99% durability
-- Accessible from anywhere (cluster, laptop, Lightning AI)
-- Easy to share with collaborators
+-   Backed up with 99.99% durability
+-   Accessible from anywhere (cluster, laptop, Lightning AI)
+-   Easy to share with collaborators
 
 #### Quick reference
 
@@ -715,7 +715,7 @@ rm -rf $SANDBOX_DIR/s3-test
 
 ### 5. Mounting S3 Buckets (rclone)
 
-For workflows that need filesystem-like access to S3 (e.g., training code that expects local paths), we use rclone FUSE mounts. This creates a local directory that transparently reads/writes to S3.
+If you prefer filesystem-like access to S3 (treating an s3 bucket like a "mounted local file system"), we use rclone FUSE mounts. This creates a local directory that transparently reads/writes to S3.
 
 #### One-time rclone setup
 
@@ -805,18 +805,18 @@ cd $BUCKET_DIR
 
 Mount S3 buckets when your code expects local file paths and can't easily be modified to use fsspec. Common cases:
 
-- Training frameworks that read data from disk
-- Legacy code that uses `open()` or `os.path` functions
-- Tools that don't support S3 URLs directly
+-   Training frameworks that read data from disk
+-   Legacy code that uses `open()` or `os.path` functions
+-   Tools that don't support S3 URLs directly
 
 For new code, prefer **fsspec** (section 4) - it's simpler and doesn't require mount/unmount management.
 
 #### Best practices
 
-- **Mount at job start, unmount at job end** - ensures all writes are flushed to S3
-- **Don't leave mounts running** - orphaned mounts can cause issues on shared nodes
-- **Use the sweep script** if you see stale mounts or "transport endpoint not connected" errors
-- **One mount per bucket per job** - the scripts handle this automatically
+-   **Mount at job start, unmount at job end** - ensures all writes are flushed to S3
+-   **Don't leave mounts running** - orphaned mounts can cause issues on shared nodes
+-   **Use the sweep script** if you see stale mounts or "transport endpoint not connected" errors
+-   **One mount per bucket per job** - the scripts handle this automatically
 
 ---
 
