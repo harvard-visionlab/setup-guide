@@ -512,83 +512,197 @@ You should see "Hello from the cluster!" - confirming read/write access works.
 
 ### 4. Python Access (fsspec)
 
-For Python S3 access, we use `fsspec` with the `s3fs` backend. This provides a Pythonic filesystem interface that works seamlessly with pandas, xarray, and other data tools.
+For Python S3 access, we use `fsspec` with the `s3fs` backend. This provides a Pythonic filesystem interface that works seamlessly with pandas, PyTorch, and other data tools.
 
-**Note:** Don't install `boto3` alongside `s3fs` - they have conflicting dependencies. Use `s3fs` for Python access and the AWS CLI for shell operations.
+#### Set up the test project
 
 Initialize a uv project in your s3-test directory:
 
 ```bash
 cd $SANDBOX_DIR/s3-test
 uv init
-uv add fsspec s3fs ipykernel
+uv add fsspec s3fs pandas pyarrow torch ipykernel
 ```
 
-**Basic fsspec usage:**
+#### Open a Jupyter notebook
+
+1. In JupyterLab, navigate to your `s3-test` directory (`$SANDBOX_DIR/s3-test`)
+2. Click **File → New → Notebook**
+3. Select **Python (uv auto)** as the kernel
+4. The kernel will automatically use the project's `.venv` with all the packages you just installed
+
+#### Basic fsspec usage
+
+**Cell 1** - Set up the filesystem:
 
 ```python
 import os
 import fsspec
 
 USER = os.getenv('USER')
-
-# Create S3 filesystem
 fs = fsspec.filesystem('s3')
-
-# List bucket contents
-fs.ls('visionlab-members')
-
-# Write a file
-with fs.open(f's3://visionlab-members/{USER}/testing123/test.txt', 'w') as f:
-    f.write('Hello from Python!')
-
-# Read a file directly
-with fs.open(f's3://visionlab-members/{USER}/testing123/test.txt') as f:
-    data = f.read()
-print(data)
+print(f"User: {USER}")
 ```
 
-**Verify permissions:**
+**Cell 2** - List your files in S3:
 
 ```python
-# List your files (should work)
-fs.ls(f'visionlab-members/{USER}/')
-
-# List another user's files (should error - no permission)
-fs.ls('visionlab-members/someotheruser/')
+fs.ls(f'visionlab-members/{USER}/testing/')
 ```
 
-Each user can only read/write within their own directory in `visionlab-members`.
+You should see `hello-world.txt` from step 3!
 
-**Works with pandas:**
+**Cell 3** - Read the file you uploaded with s5cmd:
+
+```python
+with fs.open(f's3://visionlab-members/{USER}/testing/hello-world.txt') as f:
+    content = f.read()
+print(content)
+```
+
+Output: `Hello from the cluster!`
+
+**Cell 4** - Write a new file from Python:
+
+```python
+with fs.open(f's3://visionlab-members/{USER}/testing/hello-from-python.txt', 'w') as f:
+    f.write('Hello from Python!')
+
+# Verify it's there
+fs.ls(f'visionlab-members/{USER}/testing/')
+```
+
+#### Works with pandas
+
+**Cell 5** - Create sample data and save to S3:
 
 ```python
 import pandas as pd
+import numpy as np
 
-# Read directly from S3
-df = pd.read_csv('s3://visionlab-members/path/to/data.csv')
-df = pd.read_parquet('s3://visionlab-members/path/to/data.parquet')
-
-# Write directly to S3
-df.to_parquet('s3://visionlab-members/myuser/output.parquet')
+# Generate sample analysis results
+np.random.seed(42)
+df = pd.DataFrame({
+    'model': [f'model_{i}' for i in range(100)],
+    'accuracy': np.random.uniform(0.7, 0.95, 100),
+    'loss': np.random.uniform(0.1, 0.5, 100),
+    'epoch': np.random.randint(1, 50, 100)
+})
+df.head()
 ```
 
-**Works with PyTorch:**
+**Cell 6** - Save as CSV and Parquet, compare sizes:
+
+```python
+csv_path = f's3://visionlab-members/{USER}/testing/results.csv'
+parquet_path = f's3://visionlab-members/{USER}/testing/results.parquet'
+
+# Save both formats
+df.to_csv(csv_path, index=False)
+df.to_parquet(parquet_path, index=False)
+
+# Compare file sizes
+csv_size = fs.size(csv_path)
+parquet_size = fs.size(parquet_path)
+print(f"CSV size:     {csv_size:,} bytes")
+print(f"Parquet size: {parquet_size:,} bytes")
+print(f"Parquet is {csv_size/parquet_size:.1f}x smaller!")
+```
+
+**Cell 7** - Read the files back:
+
+```python
+# Read directly from S3
+df_from_csv = pd.read_csv(csv_path)
+df_from_parquet = pd.read_parquet(parquet_path)
+
+print("From CSV:")
+print(df_from_csv.head(3))
+print("\nFrom Parquet:")
+print(df_from_parquet.head(3))
+```
+
+#### Works with PyTorch
+
+**Cell 8** - Create and save a model:
 
 ```python
 import torch
-import fsspec
+import torch.nn as nn
 
-# Save model to S3
-with fsspec.open('s3://visionlab-members/myuser/model.pt', 'wb') as f:
+# Create a simple model
+model = nn.Sequential(
+    nn.Linear(128, 64),
+    nn.ReLU(),
+    nn.Linear(64, 10)
+)
+
+# Initialize with random weights
+print(f"Original first weight: {model[0].weight[0, 0].item():.6f}")
+
+# Save to S3
+model_path = f's3://visionlab-members/{USER}/testing/demo_model.pt'
+with fs.open(model_path, 'wb') as f:
     torch.save(model.state_dict(), f)
 
-# Load model from S3
-with fsspec.open('s3://visionlab-members/myuser/model.pt', 'rb') as f:
-    model.load_state_dict(torch.load(f))
+print(f"Model saved to {model_path}")
 ```
 
-Clean up test project:
+**Cell 9** - Load the model back:
+
+```python
+# Create a fresh model (random weights)
+loaded_model = nn.Sequential(
+    nn.Linear(128, 64),
+    nn.ReLU(),
+    nn.Linear(64, 10)
+)
+print(f"Before loading: {loaded_model[0].weight[0, 0].item():.6f}")
+
+# Load weights from S3
+with fs.open(model_path, 'rb') as f:
+    loaded_model.load_state_dict(torch.load(f, weights_only=True))
+
+print(f"After loading:  {loaded_model[0].weight[0, 0].item():.6f}")
+print("Weights restored successfully!")
+```
+
+#### Summary
+
+You now know how to read and write files to S3 from Python. **S3 is your primary storage location** - all outputs (model weights, analysis results, figures) should be saved here. Files in S3 are:
+
+- Backed up with 99.99% durability
+- Accessible from anywhere (cluster, laptop, Lightning AI)
+- Easy to share with collaborators
+
+#### Quick reference
+
+```python
+import fsspec
+fs = fsspec.filesystem('s3')
+
+# List files
+fs.ls(f'visionlab-members/{USER}/path/')
+
+# Check if file exists
+fs.exists(f'visionlab-members/{USER}/path/file.pt')
+
+# Get file size
+fs.size(f'visionlab-members/{USER}/path/file.pt')
+
+# Delete a file
+fs.rm(f's3://visionlab-members/{USER}/path/file.pt')
+
+# Read/write text
+with fs.open('s3://...', 'r') as f: text = f.read()
+with fs.open('s3://...', 'w') as f: f.write(text)
+
+# Read/write binary (models, pickles)
+with fs.open('s3://...', 'rb') as f: data = f.read()
+with fs.open('s3://...', 'wb') as f: f.write(data)
+```
+
+#### Clean up test project
 
 ```bash
 rm -rf $SANDBOX_DIR/s3-test
