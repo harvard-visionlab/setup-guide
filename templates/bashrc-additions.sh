@@ -8,7 +8,7 @@ export LAB=alvarez_lab
 
 # Storage roots
 export HOLYLABS=/n/holylabs/LABS/${LAB}/Users/$USER
-export NETSCRATCH=/n/netscratch/${LAB}/Lab/Users/$USER
+export NETSCRATCH=/n/netscratch/${LAB}/Everyone/$USER
 export TIER1=/n/alvarez_lab_tier1/Users/$USER
 
 # Holylabs folder structure

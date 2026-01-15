@@ -29,7 +29,7 @@ if [ -z "$LAB" ]; then
     exit 1
 fi
 
-NETSCRATCH="/n/netscratch/${LAB}/Lab/Users/$USER"
+NETSCRATCH="/n/netscratch/${LAB}/Everyone/$USER"
 HOLYLABS="/n/holylabs/LABS/${LAB}/Users/$USER"
 TIER1="/n/alvarez_lab_tier1/Users/$USER"
 

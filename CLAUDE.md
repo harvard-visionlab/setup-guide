@@ -42,7 +42,7 @@ We are building a comprehensive setup guide covering multiple environments (Harv
 | Home | `~/` | 100GB limit, persistent | Config files, symlinks only |
 | Tier1 | `/n/alvarez_lab_tier1/Users/$USER/` | Expensive, limited, performant, persistent | Valuable persistent data |
 | Holylabs | `/n/holylabs/LABS/${LAB}/Users/$USER/` | Less performant, inexpensive, persistent | Projects, code, uv cache |
-| Netscratch | `/n/netscratch/${LAB}/Lab/Users/$USER/` | Free, large, performant, ephemeral | Scratch, temp files |
+| Netscratch | `/n/netscratch/${LAB}/Everyone/$USER/` | Free, large, performant, ephemeral | Scratch, temp files |
 
 **Critical:** Netscratch has monthly cleanup. Never store irreplaceable data there.
 

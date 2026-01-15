@@ -34,7 +34,7 @@ The cluster has several storage tiers with different characteristics:
 | Home       | `~/`                                    | Your home, mounted every job, 100GB limit, persistent    | Config files, symlinks                        |
 | Tier1      | `/n/alvarez_lab_tier1/Users/$USER/`     | Expensive, limited (~8TB), performant, persistent        | Use for big datasets, caches, not "outputs"   |
 | Holylabs   | `/n/holylabs/LABS/${LAB}/Users/$USER/`  | Less performant, inexpensive, persistent                 | Project repos (code), uv cache, not "outputs" |
-| Netscratch | `/n/netscratch/${LAB}/Lab/Users/$USER/` | Free, large, performant, **ephemeral** (monthly cleanup) | Temporary scratch, large intermediate files   |
+| Netscratch | `/n/netscratch/${LAB}/Everyone/$USER/` | Free, large, performant, **ephemeral** (monthly cleanup) | Temporary scratch, large intermediate files   |
 | AWS        | cloud storage "s3 buckets"              | Affordable, very large, backed-up (aws 99.99%)           | All outputs (model weights, analysis results) |
 
 **Warning:** Files on netscratch are automatically deleted during monthly cleanup. Never store anything there that you can't regenerate.
@@ -62,7 +62,7 @@ export LAB=alvarez_lab
 
 # Storage roots
 export MY_WORK_DIR=/n/holylabs/LABS/${LAB}/Users/$USER
-export MY_NETSCRATCH=/n/netscratch/${LAB}/Lab/Users/$USER
+export MY_NETSCRATCH=/n/netscratch/${LAB}/Everyone/$USER
 export LAB_TIER1=/n/alvarez_lab_tier1/Lab/
 
 # Holylabs folder structure
@@ -159,7 +159,7 @@ Your home directory has a 100GB quota. Many applications create large hidden cac
 First, create your netscratch user directory if it doesn't exist:
 
 ```bash
-mkdir -p /n/netscratch/${LAB}/Lab/Users/$USER
+mkdir -p /n/netscratch/${LAB}/Everyone/$USER
 ```
 
 #### ~/.cache → netscratch
@@ -171,8 +171,8 @@ General caches (pip, huggingface models, torch hub, etc.). Safe to delete - ever
 rm -rf ~/.cache
 
 # Create symlink
-mkdir -p /n/netscratch/${LAB}/Lab/Users/$USER/.cache
-ln -s /n/netscratch/${LAB}/Lab/Users/$USER/.cache ~/.cache
+mkdir -p /n/netscratch/${LAB}/Everyone/$USER/.cache
+ln -s /n/netscratch/${LAB}/Everyone/$USER/.cache ~/.cache
 ```
 
 #### ~/.conda → tier1 (if using conda)
@@ -251,13 +251,13 @@ ls -la /n/alvarez_lab_tier1/Users/$USER/ && echo "Tier1 access OK" || echo "No t
 ls -la /n/holylabs/LABS/${LAB}/Users/$USER/ && echo "Holylabs access OK" || echo "No holylabs access"
 
 # Check netscratch access (may need to create your directory)
-ls -la /n/netscratch/${LAB}/Lab/Users/$USER/ 2>/dev/null && echo "Netscratch access OK" || echo "Netscratch directory doesn't exist yet"
+ls -la /n/netscratch/${LAB}/Everyone/$USER/ 2>/dev/null && echo "Netscratch access OK" || echo "Netscratch directory doesn't exist yet"
 ```
 
 If your netscratch user directory doesn't exist, create it:
 
 ```bash
-mkdir -p /n/netscratch/${LAB}/Lab/Users/$USER
+mkdir -p /n/netscratch/${LAB}/Everyone/$USER
 ```
 
 If you don't have access to tier1 or holylabs, contact the lab administrator.
@@ -941,7 +941,7 @@ uv cache prune             # Clean up old cached packages
 ```bash
 $LAB                    # Your lab: alvarez_lab or konkle_lab
 $HOLYLABS               # /n/holylabs/LABS/${LAB}/Users/$USER
-$NETSCRATCH             # /n/netscratch/${LAB}/Lab/Users/$USER
+$NETSCRATCH             # /n/netscratch/${LAB}/Everyone/$USER
 $TIER1                  # /n/alvarez_lab_tier1/Users/$USER
 $PROJECT_DIR            # ${HOLYLABS}/Projects
 $BUCKET_DIR             # ${HOLYLABS}/Buckets
