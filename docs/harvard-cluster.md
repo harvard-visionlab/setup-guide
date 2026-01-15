@@ -91,17 +91,9 @@ export BUCKET_DIR=${MY_WORK_DIR}/Buckets      # S3 bucket mounts
 export SANDBOX_DIR=${MY_WORK_DIR}/Sandbox     # Testing/scratch
 
 # uv (Python package manager) configuration
-# Shared lab cache - first person to install a package benefits everyone
-# Uses alvarez_lab since all visionlab members have access
-export UV_CACHE_DIR=/n/holylabs/LABS/alvarez_lab/Everyone/.uv_cache
-# Per-user tools directory
+# Cache on holylabs enables hardlinks for fast installs
+export UV_CACHE_DIR=${MY_WORK_DIR}/.uv_cache
 export UV_TOOL_DIR=${MY_WORK_DIR}/.uv_tools
-
-# Shared model caches - first person to download benefits everyone
-# On netscratch: performant, large, ephemeral (models re-download as needed)
-export TORCH_HOME=/n/netscratch/alvarez_lab/Everyone/.cache/torch
-export HF_HOME=/n/netscratch/alvarez_lab/Everyone/.cache/huggingface
-export KERAS_HOME=/n/netscratch/alvarez_lab/Everyone/.cache/keras
 
 # AWS configuration
 # ask George to send you your credentials; keep these secret always, never commit these to any public repo
@@ -140,12 +132,9 @@ source ~/.bashrc
 | `PROJECT_DIR`           | Where your git repos live                         |
 | `BUCKET_DIR`            | Where S3 buckets are mounted                      |
 | `SANDBOX_DIR`           | For testing and scratch work                      |
-| `UV_CACHE_DIR`          | Shared lab cache for uv packages (holylabs)       |
-| `UV_TOOL_DIR`           | Your uv tools directory (CLI tools like s5cmd)    |
-| `TORCH_HOME`            | Shared PyTorch model cache (netscratch)           |
-| `HF_HOME`               | Shared HuggingFace model cache (netscratch)       |
-| `KERAS_HOME`            | Shared Keras model cache (netscratch)             |
-| `AWS_ACCESS_KEY_ID`     | Your AWS access key (get from George)             |
+| `UV_CACHE_DIR`          | Your uv package cache (holylabs, enables hardlinks) |
+| `UV_TOOL_DIR`           | Your uv tools directory (CLI tools like s5cmd)      |
+| `AWS_ACCESS_KEY_ID`     | Your AWS access key (get from George)               |
 | `AWS_SECRET_ACCESS_KEY` | Your AWS secret key (get from George)             |
 | `AWS_REGION`            | AWS region (us-east-1)                            |
 
@@ -260,23 +249,17 @@ ln -s /n/alvarez_lab_tier1/Users/$USER/.conda ~/.conda
 
 Skip this step if you don't use conda or plan to switch to uv.
 
-#### ~/.lightning → shared netscratch
+#### ~/.lightning → netscratch
 
-Lightning AI's `litdata` library caches StreamingDataset chunks here. We use a **shared lab directory** so everyone benefits from already-downloaded chunks.
+Lightning AI's `litdata` library caches StreamingDataset chunks here.
 
 ```bash
 # Remove existing lightning directory
 rm -rf ~/.lightning
 
-# Create symlink to shared lab location
-ln -s /n/netscratch/alvarez_lab/Everyone/.lightning ~/.lightning
-```
-
-The shared directory should already exist with proper permissions. If not, ask George to create it:
-
-```bash
-mkdir -p /n/netscratch/alvarez_lab/Everyone/.lightning
-chmod 2775 /n/netscratch/alvarez_lab/Everyone/.lightning
+# Create symlink to your netscratch
+mkdir -p $MY_NETSCRATCH/.lightning
+ln -s $MY_NETSCRATCH/.lightning ~/.lightning
 ```
 
 #### Verify symlinks
@@ -317,7 +300,7 @@ If you ran the bashrc setup above, `UV_CACHE_DIR` is already configured. Verify:
 
 ```bash
 echo $UV_CACHE_DIR
-# Should show: /n/holylabs/LABS/alvarez_lab/Everyone/.uv_cache
+# Should show: /n/holylabs/LABS/<your-lab>/Users/<your-username>/.uv_cache
 ```
 
 **Why holylabs?** The uv cache and your project virtual environments will both live on holylabs. This allows uv to use hardlinks instead of copying files, which means:
@@ -341,7 +324,7 @@ Now add some packages:
 time uv add numpy torch
 ```
 
-If another lab member has already installed these packages, this will be **fast** (seconds) thanks to the shared cache. If you're the first, it may take a minute or two to download (torch is large).
+The first time you install, it may take a minute or two to download (torch is large). Subsequent installs will be **fast** (seconds) thanks to the cache.
 
 The project will contain:
 
@@ -360,7 +343,7 @@ uv init
 time uv add numpy torch
 ```
 
-This should be much faster because uv hardlinks from the shared cache instead of re-downloading.
+This should be much faster because uv hardlinks from the cache instead of re-downloading.
 
 Verify hardlinks are working by comparing disk usage:
 
@@ -902,21 +885,16 @@ Summary of symlinks set up in [Initial Setup](#2-set-up-home-directory-symlinks)
 
 ### Symlinked to Netscratch (ephemeral, ok to lose)
 
-| Directory  | Purpose                                             | Typical size |
-| ---------- | --------------------------------------------------- | ------------ |
-| `~/.cache` | General application caches (pip, huggingface, etc.) | 10-100+ GB   |
+| Directory      | Purpose                                             | Typical size |
+| -------------- | --------------------------------------------------- | ------------ |
+| `~/.cache`     | General application caches (pip, huggingface, etc.) | 10-100+ GB   |
+| `~/.lightning` | StreamingDataset chunks (litdata)                   | 1-50+ GB     |
 
 ### Symlinked to Tier1 (persistent)
 
 | Directory  | Purpose                             | Why persistent                     |
 | ---------- | ----------------------------------- | ---------------------------------- |
 | `~/.conda` | Conda environments (if using conda) | Environments take time to recreate |
-
-### Symlinked to Shared Netscratch (lab-wide)
-
-| Directory      | Purpose                           | Why shared                               |
-| -------------- | --------------------------------- | ---------------------------------------- |
-| `~/.lightning` | StreamingDataset chunks (litdata) | Everyone benefits from downloaded chunks |
 
 ### Left in Home (small, worth keeping)
 
@@ -956,11 +934,8 @@ $TIER1                  # /n/alvarez_lab_tier1/Lab/
 $PROJECT_DIR            # ${MY_WORK_DIR}/Projects
 $BUCKET_DIR             # ${MY_WORK_DIR}/Buckets
 $SANDBOX_DIR            # ${MY_WORK_DIR}/Sandbox
-$UV_CACHE_DIR           # Shared: /n/holylabs/LABS/alvarez_lab/Everyone/.uv_cache
+$UV_CACHE_DIR           # ${MY_WORK_DIR}/.uv_cache
 $UV_TOOL_DIR            # ${MY_WORK_DIR}/.uv_tools
-$TORCH_HOME             # Shared: /n/netscratch/alvarez_lab/Everyone/.cache/torch
-$HF_HOME                # Shared: /n/netscratch/alvarez_lab/Everyone/.cache/huggingface
-$KERAS_HOME             # Shared: /n/netscratch/alvarez_lab/Everyone/.cache/keras
 $AWS_ACCESS_KEY_ID      # Your AWS access key (keep secret!)
 $AWS_SECRET_ACCESS_KEY  # Your AWS secret key (keep secret!)
 $AWS_REGION             # us-east-1

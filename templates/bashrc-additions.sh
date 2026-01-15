@@ -17,17 +17,9 @@ export BUCKET_DIR=${MY_WORK_DIR}/Buckets      # S3 bucket mounts
 export SANDBOX_DIR=${MY_WORK_DIR}/Sandbox     # Testing/scratch
 
 # uv (Python package manager) configuration
-# Shared lab cache - first person to install a package benefits everyone
-# Uses alvarez_lab since all visionlab members have access
-export UV_CACHE_DIR=/n/holylabs/LABS/alvarez_lab/Everyone/.uv_cache
-# Per-user tools directory
+# Cache on holylabs enables hardlinks for fast installs
+export UV_CACHE_DIR=${MY_WORK_DIR}/.uv_cache
 export UV_TOOL_DIR=${MY_WORK_DIR}/.uv_tools
-
-# Shared model caches - first person to download benefits everyone
-# On netscratch: performant, large, ephemeral (models re-download as needed)
-export TORCH_HOME=/n/netscratch/alvarez_lab/Everyone/.cache/torch
-export HF_HOME=/n/netscratch/alvarez_lab/Everyone/.cache/huggingface
-export KERAS_HOME=/n/netscratch/alvarez_lab/Everyone/.cache/keras
 
 # AWS configuration
 # Ask George to send you your credentials; keep these secret always, never commit to any public repo.
