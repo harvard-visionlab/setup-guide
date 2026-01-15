@@ -277,17 +277,13 @@ We use [uv](https://docs.astral.sh/uv/) for Python environment management. It's 
 
 ### 1. Install uv
 
+Run the following in your terminal (from any location, it doesn't matter what location you start from)
+
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-Restart your shell or run:
-
-```bash
-source ~/.local/bin/env
-```
-
-Verify installation:
+Verify installation (`~/.local/bin` is already in your PATH):
 
 ```bash
 uv --version
