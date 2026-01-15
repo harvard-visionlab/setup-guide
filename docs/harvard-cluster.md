@@ -8,7 +8,7 @@ The cluster has several storage tiers with different characteristics:
 
 | Storage    | Path                                    | Characteristics                                          | Use for                                       |
 | ---------- | --------------------------------------- | -------------------------------------------------------- | --------------------------------------------- |
-| Home       | `~/`                                    | 100GB limit, persistent, your home, mounted every job    | Config files, symlinks                        |
+| Home       | `~/`                                    | your home, 100GB limit, persistent, mounted every job    | Config files, symlinks                        |
 | Tier1      | `/n/alvarez_lab_tier1/Users/$USER/`     | Expensive, limited (~TB), performant, persistent         | Use for big datasets, caches, not "outputs"   |
 | Holylabs   | `/n/holylabs/LABS/${LAB}/Users/$USER/`  | Less performant, inexpensive, persistent                 | Project repos (code), uv cache, not "outputs" |
 | Netscratch | `/n/netscratch/${LAB}/Lab/Users/$USER/` | Free, large, performant, **ephemeral** (monthly cleanup) | Temporary scratch, large intermediate files   |
@@ -70,6 +70,7 @@ source ~/.bashrc
 ```
 
 **Note on shared uv cache:** The `UV_CACHE_DIR` points to a shared lab directory. When you install a package, it benefits everyone - subsequent installs are near-instant via hardlinks. The directory should already exist with proper permissions. If not, ask George to create it:
+
 ```bash
 mkdir -p /n/holylabs/LABS/alvarez_lab/Lab/.uv_cache
 chmod 2775 /n/holylabs/LABS/alvarez_lab/Lab/.uv_cache
@@ -361,9 +362,10 @@ uv add ipykernel
 ## AWS and S3 Buckets
 
 All lab outputs (model weights, analysis results, figures) should be stored in S3 buckets. This provides:
-- Reliable cloud backup (AWS 99.99% durability)
-- Access from anywhere (cluster, laptops, Lightning AI, workstations)
-- Easy sharing within and outside the lab
+
+-   Reliable cloud backup (AWS 99.99% durability)
+-   Access from anywhere (cluster, laptops, Lightning AI, workstations)
+-   Easy sharing within and outside the lab
 
 ### 1. Install AWS CLI Tools
 
@@ -406,8 +408,9 @@ aws s3 ls
 ```
 
 You should see at least:
-- `visionlab-members` - Shared lab bucket for outputs
-- `visionlab-datasets` - Common datasets
+
+-   `visionlab-members` - Shared lab bucket for outputs
+-   `visionlab-datasets` - Common datasets
 
 List contents of a bucket:
 
@@ -587,6 +590,7 @@ ls visionlab-members/
 ```
 
 The script:
+
 1. Creates a node-local mount at `/tmp/$USER/rclone/<hostname>/<job_id>/<bucket>`
 2. Creates a symlink from `$BUCKET_DIR/<bucket>` to the mount
 3. Works with SLURM jobs (each job gets isolated mounts)
@@ -622,12 +626,12 @@ SLURM (Simple Linux Utility for Resource Management) is the job scheduler on the
 
 ### Key Concepts
 
-| Term | Description |
-|------|-------------|
-| **Job** | A request for compute resources (CPUs, GPUs, memory, time) |
+| Term          | Description                                                                |
+| ------------- | -------------------------------------------------------------------------- |
+| **Job**       | A request for compute resources (CPUs, GPUs, memory, time)                 |
 | **Partition** | A group of nodes with similar characteristics (e.g., `gpu`, `gpu_requeue`) |
-| **Node** | A physical server with CPUs, memory, and possibly GPUs |
-| **Task** | A process within a job (most jobs have one task) |
+| **Node**      | A physical server with CPUs, memory, and possibly GPUs                     |
+| **Task**      | A process within a job (most jobs have one task)                           |
 
 ### Common Commands
 
@@ -719,13 +723,13 @@ sbatch job.sh
 
 ### Common Partitions
 
-| Partition | GPUs | Time Limit | Notes |
-|-----------|------|------------|-------|
-| `gpu` | A100, V100 | 7 days | Standard GPU partition |
-| `gpu_requeue` | A100, V100 | 7 days | Lower priority, preemptible, **use for checkpointed jobs** |
-| `gpu_test` | A100, V100 | 1 hour | Testing/debugging, high priority |
-| `test` | None | 1 hour | CPU-only testing |
-| `serial_requeue` | None | 7 days | CPU jobs, preemptible |
+| Partition        | GPUs       | Time Limit | Notes                                                      |
+| ---------------- | ---------- | ---------- | ---------------------------------------------------------- |
+| `gpu`            | A100, V100 | 7 days     | Standard GPU partition                                     |
+| `gpu_requeue`    | A100, V100 | 7 days     | Lower priority, preemptible, **use for checkpointed jobs** |
+| `gpu_test`       | A100, V100 | 1 hour     | Testing/debugging, high priority                           |
+| `test`           | None       | 1 hour     | CPU-only testing                                           |
+| `serial_requeue` | None       | 7 days     | CPU jobs, preemptible                                      |
 
 **Recommendation:** Use `gpu_requeue` for training jobs that checkpoint regularly. You get better queue times and contribute to cluster efficiency.
 
@@ -836,14 +840,14 @@ Summary of symlinks set up in [Initial Setup](#2-set-up-home-directory-symlinks)
 
 ### Left in Home (small, worth keeping)
 
-| Directory                 | Purpose                            | Notes                               |
-| ------------------------- | ---------------------------------- | ----------------------------------- |
-| `~/.ssh`                  | SSH keys                           | Critical, keep secure               |
-| `~/.config`               | Application configs                | Small                               |
-| `~/.bashrc`, `~/.profile` | Shell config                       | Small                               |
-| `~/.jupyter`              | Jupyter config                     | Small                               |
-| `~/.nv`                   | NVIDIA/CUDA compilation cache      | Small, expensive to rebuild         |
-| `~/.triton`               | Triton GPU compiler cache          | Small, expensive to rebuild         |
+| Directory                 | Purpose                       | Notes                       |
+| ------------------------- | ----------------------------- | --------------------------- |
+| `~/.ssh`                  | SSH keys                      | Critical, keep secure       |
+| `~/.config`               | Application configs           | Small                       |
+| `~/.bashrc`, `~/.profile` | Shell config                  | Small                       |
+| `~/.jupyter`              | Jupyter config                | Small                       |
+| `~/.nv`                   | NVIDIA/CUDA compilation cache | Small, expensive to rebuild |
+| `~/.triton`               | Triton GPU compiler cache     | Small, expensive to rebuild |
 
 ---
 
