@@ -23,6 +23,12 @@ export UV_CACHE_DIR=/n/holylabs/LABS/alvarez_lab/Lab/.uv_cache
 # Per-user tools directory
 export UV_TOOL_DIR=${HOLYLABS}/.uv_tools
 
+# Shared model caches - first person to download benefits everyone
+# On netscratch: performant, large, ephemeral (models re-download as needed)
+export TORCH_HOME=/n/netscratch/alvarez_lab/Lab/.cache/torch
+export HF_HOME=/n/netscratch/alvarez_lab/Lab/.cache/huggingface
+export KERAS_HOME=/n/netscratch/alvarez_lab/Lab/.cache/keras
+
 # AWS configuration
 # Ask George to send you your credentials; keep these secret always, never commit to any public repo.
 # Bots crawl and find exposed credentials - it will cost you tens of thousands of dollars
