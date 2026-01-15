@@ -2,6 +2,28 @@
 
 This guide covers setting up your computing environment on the Harvard FASRC cluster.
 
+## Table of Contents
+
+-   [Getting Started](#getting-started)
+-   [Storage Overview](#storage-overview)
+-   [Initial Setup](#initial-setup)
+    -   [Configure Your Shell](#1-configure-your-shell)
+    -   [Verify Storage Access](#2-verify-storage-access)
+    -   [Create Holylabs Folder Structure](#3-create-holylabs-folder-structure)
+    -   [Set Up Home Directory Symlinks](#4-set-up-home-directory-symlinks)
+-   [Python Environment Setup with uv](#python-environment-setup-with-uv)
+    -   [Install uv](#1-install-uv)
+    -   [Configure uv Cache](#2-configure-uv-cache)
+    -   [Create a Test Project](#3-create-a-test-project)
+    -   [Verify Hardlinks Work](#4-verify-hardlinks-work)
+    -   [Running Code](#5-running-code)
+-   [Jupyter Setup](#jupyter-setup)
+-   [AWS and S3 Buckets](#aws-and-s3-buckets)
+-   [SLURM Basics](#slurm-basics)
+-   [Home Directory Symlinks](#home-directory-symlinks)
+-   [Quick Reference](#quick-reference)
+-   [Troubleshooting](#troubleshooting)
+
 ## Getting Started
 
 **New to the cluster?** If you haven't set up your FASRC account yet, see [Getting onto the Harvard FASRC Cluster](getting-cluster-access.md) first.
