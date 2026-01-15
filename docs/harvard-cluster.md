@@ -8,8 +8,8 @@ The cluster has several storage tiers with different characteristics:
 
 | Storage    | Path                                    | Characteristics                                          | Use for                                       |
 | ---------- | --------------------------------------- | -------------------------------------------------------- | --------------------------------------------- |
-| Home       | `~/`                                    | your home, 100GB limit, persistent, mounted every job    | Config files, symlinks                        |
-| Tier1      | `/n/alvarez_lab_tier1/Users/$USER/`     | Expensive, limited (~TB), performant, persistent         | Use for big datasets, caches, not "outputs"   |
+| Home       | `~/`                                    | Your home, 100GB limit, persistent, mounted every job    | Config files, symlinks                        |
+| Tier1      | `/n/alvarez_lab_tier1/Users/$USER/`     | Expensive, limited (~8TB), performant, persistent        | Use for big datasets, caches, not "outputs"   |
 | Holylabs   | `/n/holylabs/LABS/${LAB}/Users/$USER/`  | Less performant, inexpensive, persistent                 | Project repos (code), uv cache, not "outputs" |
 | Netscratch | `/n/netscratch/${LAB}/Lab/Users/$USER/` | Free, large, performant, **ephemeral** (monthly cleanup) | Temporary scratch, large intermediate files   |
 | AWS        | cloud storage "s3 buckets"              | Affordable, very large, backed-up (aws 99.99%)           | All outputs (model weights, analysis results) |
@@ -63,7 +63,9 @@ export AWS_SECRET_ACCESS_KEY=
 export AWS_REGION=us-east-1
 ```
 
-Save and reload:
+Save and exit nano: `Ctrl+O` (write out), `Enter` to confirm, then `Ctrl+X` (exit).
+
+Reload your shell configuration:
 
 ```bash
 source ~/.bashrc
