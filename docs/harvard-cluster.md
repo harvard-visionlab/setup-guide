@@ -19,6 +19,11 @@ This guide covers setting up your computing environment on the Harvard FASRC clu
     -   [Jupyter Setup](#5-jupyter-setup)
     -   [Clean Up Test Projects](#6-clean-up-test-projects)
 -   [AWS and S3 Buckets](#aws-and-s3-buckets)
+    -   [Install AWS CLI Tools](#1-install-aws-cli-tools)
+    -   [Verify AWS Access](#2-verify-aws-access)
+    -   [Basic S3 Operations](#3-basic-s3-operations)
+    -   [Python Access (fsspec)](#4-python-access-fsspec)
+    -   [Mounting S3 Buckets (rclone)](#5-mounting-s3-buckets-rclone)
 -   [SLURM Basics](#slurm-basics)
 -   [Home Directory Symlinks](#home-directory-symlinks)
 -   [Quick Reference](#quick-reference)
@@ -387,7 +392,7 @@ EOF
 Verify installation from your test project:
 
 ```bash
-cd $SANDBOX/test-project
+cd $SANDBOX_DIR/test-project
 uv run jupyter kernelspec list
 ```
 
