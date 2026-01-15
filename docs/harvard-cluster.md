@@ -8,7 +8,7 @@ The cluster has several storage tiers with different characteristics:
 
 | Storage    | Path                                    | Characteristics                                          | Use for                                       |
 | ---------- | --------------------------------------- | -------------------------------------------------------- | --------------------------------------------- |
-| Home       | `~/`                                    | Your home, 100GB limit, persistent, mounted every job    | Config files, symlinks                        |
+| Home       | `~/`                                    | Your home, mounted every job, 100GB limit, persistent    | Config files, symlinks                        |
 | Tier1      | `/n/alvarez_lab_tier1/Users/$USER/`     | Expensive, limited (~8TB), performant, persistent        | Use for big datasets, caches, not "outputs"   |
 | Holylabs   | `/n/holylabs/LABS/${LAB}/Users/$USER/`  | Less performant, inexpensive, persistent                 | Project repos (code), uv cache, not "outputs" |
 | Netscratch | `/n/netscratch/${LAB}/Lab/Users/$USER/` | Free, large, performant, **ephemeral** (monthly cleanup) | Temporary scratch, large intermediate files   |
