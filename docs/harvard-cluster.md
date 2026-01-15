@@ -134,13 +134,13 @@ Run these commands to confirm you have access to the required storage locations:
 ```bash
 
 # Check holylabs access
-ls -la $MY_WORK_DIR/ && echo "Holylabs access OK" || echo "No holylabs access"
+ls -la $MY_WORK_DIR/ && echo "✅ Holylabs access OK" || echo "🚫 No holylabs access"
 
 # Check netscratch access (may need to create your directory)
-ls -la $MY_NETSCRATCH/ 2>/dev/null && echo "Netscratch access OK" || echo "Netscratch directory doesn't exist yet"
+ls -la $MY_NETSCRATCH/ 2>/dev/null && echo "✅ Netscratch access OK" || echo "🚫 Netscratch directory doesn't exist yet"
 
 # Check tier1 access
-ls -la $TIER1/ && echo "Tier1 access OK" || echo "No tier1 access"
+ls -la $TIER1/ && echo "Tier1 access OK" || echo "🚫 No tier1 access"
 
 # Check home directory usage (could take a couple of minutes)
 echo "Home: $(du -sh ~ 2>/dev/null | cut -f1) used of 100GB"
