@@ -16,8 +16,8 @@ This guide covers setting up your computing environment on the Harvard FASRC clu
     -   [Configure uv Cache](#2-configure-uv-cache)
     -   [Create a Test Project](#3-create-a-test-project)
     -   [Verify Hardlinks Work](#4-verify-hardlinks-work)
-    -   [Running Code](#5-running-code)
--   [Jupyter Setup](#jupyter-setup)
+    -   [Jupyter Setup](#5-jupyter-setup)
+    -   [Clean Up Test Projects](#6-clean-up-test-projects)
 -   [AWS and S3 Buckets](#aws-and-s3-buckets)
 -   [SLURM Basics](#slurm-basics)
 -   [Home Directory Symlinks](#home-directory-symlinks)
@@ -377,32 +377,11 @@ You should see something like:
 
 The second project uses almost no additional disk space because packages are hardlinked from the cache. The ~2MB is just metadata (venv config, script wrappers, etc.).
 
-Clean up the test projects when done:
-
-```bash
-rm -rf $SANDBOX_DIR/test-project $SANDBOX_DIR/test-project-2
-```
-
-### 5. Running Code
-
-```bash
-# Run a script
-uv run python my_script.py
-
-# Run an interactive Python session
-uv run python
-
-# Add a new package
-uv add scipy
-```
-
----
-
-## Jupyter Setup
+### 5. Jupyter Setup
 
 To use your uv environments in Jupyter notebooks (e.g., on Open OnDemand), you need to install a kernel spec and add ipykernel to your projects.
 
-### 1. Install the uv Kernel Spec
+#### Install the uv Kernel Spec
 
 Run this once to install a "Python (uv auto)" kernel that automatically detects your project's environment:
 
@@ -428,7 +407,7 @@ Verify installation:
 jupyter kernelspec list
 ```
 
-### 2. Add ipykernel to Your Projects
+#### Add ipykernel to Your Projects
 
 For any project where you want Jupyter support:
 
@@ -437,7 +416,7 @@ cd /path/to/your/project
 uv add ipykernel
 ```
 
-### 3. Using the Kernel
+#### Using the Kernel
 
 1. Open a notebook in Jupyter (e.g., via Open OnDemand)
 2. Navigate to or create a notebook inside your project directory
@@ -445,6 +424,12 @@ uv add ipykernel
 4. The kernel will automatically use the project's `.venv`
 
 **How it works:** The kernel runs `uv run`, which searches upward from the notebook's location to find a `pyproject.toml`. It then activates that project's environment.
+
+### 6. Clean Up Test Projects
+
+```bash
+rm -rf $SANDBOX_DIR/test-project $SANDBOX_DIR/test-project-2
+```
 
 ---
 
