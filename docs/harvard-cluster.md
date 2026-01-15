@@ -432,8 +432,6 @@ All lab outputs (model weights, analysis results, figures) should be stored in S
 
 ### 1. Install AWS CLI Tools
 
-**AWS CLI v2** (recommended - more features, actively developed):
-
 AWS CLI v2 is distributed as a standalone binary, not a Python package, so we install it directly:
 
 ```bash
@@ -487,28 +485,30 @@ s5cmd ls s3://visionlab-members/
 
 ### 3. Basic S3 Operations
 
-**Copy files to/from S3:**
+Let's test basic read/write operations with s5cmd:
 
 ```bash
-# Upload a file
-aws s3 cp local_file.pt s3://visionlab-members/$USER/models/
+# Create a test directory
+cd $SANDBOX_DIR
+mkdir s3-test && cd s3-test
 
-# Download a file
-aws s3 cp s3://visionlab-members/$USER/models/model.pt ./
+# Create a test file
+echo "Hello from the cluster!" > hello-world.txt
 
-# Sync a directory (only copies changed files)
-aws s3 sync ./results s3://visionlab-members/$USER/experiment1/results/
+# Upload to your S3 folder
+s5cmd cp hello-world.txt s3://visionlab-members/$USER/testing/
+
+# Verify it's there
+s5cmd ls s3://visionlab-members/$USER/testing/
+
+# Download it back with a different name
+s5cmd cp s3://visionlab-members/$USER/testing/hello-world.txt downloaded.txt
+
+# Verify contents match
+cat downloaded.txt
 ```
 
-**Using s5cmd (faster for bulk operations):**
-
-```bash
-# Copy with parallelism
-s5cmd cp local_file.pt s3://visionlab-members/$USER/models/
-
-# Sync directory
-s5cmd sync ./results s3://visionlab-members/$USER/experiment1/results/
-```
+You should see "Hello from the cluster!" - confirming read/write access works.
 
 ### 4. Python Access (fsspec)
 
@@ -516,11 +516,10 @@ For Python S3 access, we use `fsspec` with the `s3fs` backend. This provides a P
 
 **Note:** Don't install `boto3` alongside `s3fs` - they have conflicting dependencies. Use `s3fs` for Python access and the AWS CLI for shell operations.
 
-Create a test project:
+Initialize a uv project in your s3-test directory:
 
 ```bash
-cd $SANDBOX_DIR
-mkdir s3-test && cd s3-test
+cd $SANDBOX_DIR/s3-test
 uv init
 uv add fsspec s3fs ipykernel
 ```
