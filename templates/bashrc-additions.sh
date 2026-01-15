@@ -25,9 +25,9 @@ export UV_TOOL_DIR=${MY_WORK_DIR}/.uv_tools
 
 # Shared model caches - first person to download benefits everyone
 # On netscratch: performant, large, ephemeral (models re-download as needed)
-export TORCH_HOME=/n/netscratch/alvarez_lab/Lab/.cache/torch
-export HF_HOME=/n/netscratch/alvarez_lab/Lab/.cache/huggingface
-export KERAS_HOME=/n/netscratch/alvarez_lab/Lab/.cache/keras
+export TORCH_HOME=/n/netscratch/alvarez_lab/Everyone/.cache/torch
+export HF_HOME=/n/netscratch/alvarez_lab/Everyone/.cache/huggingface
+export KERAS_HOME=/n/netscratch/alvarez_lab/Everyone/.cache/keras
 
 # AWS configuration
 # Ask George to send you your credentials; keep these secret always, never commit to any public repo.

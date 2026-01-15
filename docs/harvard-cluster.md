@@ -77,9 +77,9 @@ export UV_TOOL_DIR=${MY_WORK_DIR}/.uv_tools
 
 # Shared model caches - first person to download benefits everyone
 # On netscratch: performant, large, ephemeral (models re-download as needed)
-export TORCH_HOME=/n/netscratch/alvarez_lab/Lab/.cache/torch
-export HF_HOME=/n/netscratch/alvarez_lab/Lab/.cache/huggingface
-export KERAS_HOME=/n/netscratch/alvarez_lab/Lab/.cache/keras
+export TORCH_HOME=/n/netscratch/alvarez_lab/Everyone/.cache/torch
+export HF_HOME=/n/netscratch/alvarez_lab/Everyone/.cache/huggingface
+export KERAS_HOME=/n/netscratch/alvarez_lab/Everyone/.cache/keras
 
 # AWS configuration
 # ask George to send you your credentials; keep these secret always, never commit these to any public repo
@@ -247,14 +247,14 @@ Lightning AI's `litdata` library caches StreamingDataset chunks here. We use a *
 rm -rf ~/.lightning
 
 # Create symlink to shared lab location
-ln -s /n/netscratch/alvarez_lab/Lab/.lightning ~/.lightning
+ln -s /n/netscratch/alvarez_lab/Everyone/.lightning ~/.lightning
 ```
 
 The shared directory should already exist with proper permissions. If not, ask George to create it:
 
 ```bash
-mkdir -p /n/netscratch/alvarez_lab/Lab/.lightning
-chmod 2775 /n/netscratch/alvarez_lab/Lab/.lightning
+mkdir -p /n/netscratch/alvarez_lab/Everyone/.lightning
+chmod 2775 /n/netscratch/alvarez_lab/Everyone/.lightning
 ```
 
 #### Verify symlinks
@@ -951,9 +951,9 @@ $BUCKET_DIR             # ${MY_WORK_DIR}/Buckets
 $SANDBOX_DIR            # ${MY_WORK_DIR}/Sandbox
 $UV_CACHE_DIR           # Shared: /n/holylabs/LABS/alvarez_lab/Everyone/.uv_cache
 $UV_TOOL_DIR            # ${MY_WORK_DIR}/.uv_tools
-$TORCH_HOME             # Shared: /n/netscratch/alvarez_lab/Lab/.cache/torch
-$HF_HOME                # Shared: /n/netscratch/alvarez_lab/Lab/.cache/huggingface
-$KERAS_HOME             # Shared: /n/netscratch/alvarez_lab/Lab/.cache/keras
+$TORCH_HOME             # Shared: /n/netscratch/alvarez_lab/Everyone/.cache/torch
+$HF_HOME                # Shared: /n/netscratch/alvarez_lab/Everyone/.cache/huggingface
+$KERAS_HOME             # Shared: /n/netscratch/alvarez_lab/Everyone/.cache/keras
 $AWS_ACCESS_KEY_ID      # Your AWS access key (keep secret!)
 $AWS_SECRET_ACCESS_KEY  # Your AWS secret key (keep secret!)
 $AWS_REGION             # us-east-1
