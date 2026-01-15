@@ -702,7 +702,12 @@ with fs.open('s3://...', 'rb') as f: data = f.read()
 with fs.open('s3://...', 'wb') as f: f.write(data)
 ```
 
-#### Clean up test project
+#### Save and close
+
+1. **Save the notebook:** File → Rename Notebook → `s3_test.ipynb`
+2. **Stop the kernel:** Kernel → Shut Down Kernel (frees up memory)
+
+You can keep this project in your Sandbox for reference, or remove it:
 
 ```bash
 rm -rf $SANDBOX_DIR/s3-test
@@ -732,11 +737,13 @@ region = us-east-1
 EOF
 ```
 
-Test rclone can access your buckets:
+Verify rclone can access your buckets by listing directories (`lsd`) at the remote root:
 
 ```bash
 rclone lsd s3_remote:
 ```
+
+You should see `visionlab-members`, `visionlab-datasets`, and any other buckets you have access to.
 
 #### Download mount scripts
 
@@ -793,6 +800,23 @@ cd $BUCKET_DIR
 # Fix orphaned mounts
 ./s3_zombie_sweep.sh fix
 ```
+
+#### When to use mounted buckets
+
+Mount S3 buckets when your code expects local file paths and can't easily be modified to use fsspec. Common cases:
+
+- Training frameworks that read data from disk
+- Legacy code that uses `open()` or `os.path` functions
+- Tools that don't support S3 URLs directly
+
+For new code, prefer **fsspec** (section 4) - it's simpler and doesn't require mount/unmount management.
+
+#### Best practices
+
+- **Mount at job start, unmount at job end** - ensures all writes are flushed to S3
+- **Don't leave mounts running** - orphaned mounts can cause issues on shared nodes
+- **Use the sweep script** if you see stale mounts or "transport endpoint not connected" errors
+- **One mount per bucket per job** - the scripts handle this automatically
 
 ---
 
