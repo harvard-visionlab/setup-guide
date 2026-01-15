@@ -2,6 +2,29 @@
 
 This guide covers setting up your computing environment on the Harvard FASRC cluster.
 
+## Getting Started
+
+**New to the cluster?** If you haven't set up your FASRC account yet, see [Getting onto the Harvard FASRC Cluster](getting-cluster-access.md) first.
+
+**Ready to configure?** Start an interactive JupyterLab session:
+
+1. Go to [https://vdi.rc.fas.harvard.edu/](https://vdi.rc.fas.harvard.edu/)
+2. Log in with your Harvard credentials
+3. Select **Jupyter Lab** from the available applications
+4. Configure the session:
+   - **Partition:** `test` (no GPU needed for setup) or `gpu_test` (if you want to verify GPU access)
+   - **CPUs:** 4
+   - **Memory:** 16 GB
+   - **Time:** 1 hour (max for test partitions)
+5. Launch and wait for the session to start
+6. Open a **Terminal** from the JupyterLab launcher
+
+You'll run all the setup commands below in this terminal.
+
+See [FASRC partitions documentation](https://docs.rc.fas.harvard.edu/kb/running-jobs/#Slurm_partitions) for more options.
+
+---
+
 ## Storage Overview
 
 The cluster has several storage tiers with different characteristics:
@@ -605,9 +628,9 @@ Copy the bucket mounting scripts to your Buckets directory:
 cd $BUCKET_DIR
 
 # Download scripts
-curl -O https://raw.githubusercontent.com/harvard-visionlab/setup/main/scripts/s3_bucket_mount.sh
-curl -O https://raw.githubusercontent.com/harvard-visionlab/setup/main/scripts/s3_bucket_unmount.sh
-curl -O https://raw.githubusercontent.com/harvard-visionlab/setup/main/scripts/s3_zombie_sweep.sh
+curl -O https://raw.githubusercontent.com/harvard-visionlab/setup-guide/main/scripts/s3_bucket_mount.sh
+curl -O https://raw.githubusercontent.com/harvard-visionlab/setup-guide/main/scripts/s3_bucket_unmount.sh
+curl -O https://raw.githubusercontent.com/harvard-visionlab/setup-guide/main/scripts/s3_zombie_sweep.sh
 
 chmod +x s3_bucket_*.sh s3_zombie_sweep.sh
 ```

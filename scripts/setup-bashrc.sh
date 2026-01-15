@@ -42,7 +42,7 @@ CONFIG=$(cat << 'ENDCONFIG'
 
 # ==============================================================================
 # Vision Lab Standard Configuration
-# Added by harvard-visionlab/setup
+# Added by harvard-visionlab/setup-guide
 # ==============================================================================
 
 # Lab affiliation (determines storage paths)

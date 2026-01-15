@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Scan the current node for rclone FUSE mounts and report/clean up orphans.
-# See: https://github.com/harvard-visionlab/setup/blob/main/docs/harvard-cluster.md#5-mounting-s3-buckets-rclone
+# See: https://github.com/harvard-visionlab/setup-guide/blob/main/docs/harvard-cluster.md#5-mounting-s3-buckets-rclone
 #
 # Orphaned mounts can occur when:
 #   - A SLURM job crashes without unmounting

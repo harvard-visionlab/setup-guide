@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Unmount an S3 bucket that was mounted with s3_bucket_mount.sh
-# See: https://github.com/harvard-visionlab/setup/blob/main/docs/harvard-cluster.md#5-mounting-s3-buckets-rclone
+# See: https://github.com/harvard-visionlab/setup-guide/blob/main/docs/harvard-cluster.md#5-mounting-s3-buckets-rclone
 #
 # Usage:
 #   ./s3_bucket_unmount.sh <mount_path> <bucket_name> [--all-jobs] [--quiet]

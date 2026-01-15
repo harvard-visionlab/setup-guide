@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Mount an S3 bucket using rclone FUSE.
-# See: https://github.com/harvard-visionlab/setup/blob/main/docs/harvard-cluster.md#5-mounting-s3-buckets-rclone
+# See: https://github.com/harvard-visionlab/setup-guide/blob/main/docs/harvard-cluster.md#5-mounting-s3-buckets-rclone
 #
 # Prerequisites:
 #   - rclone installed and configured (~/.config/rclone/rclone.conf)
