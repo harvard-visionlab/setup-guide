@@ -4,35 +4,35 @@ This guide covers setting up your local macOS laptop for Vision Lab development 
 
 ## Table of Contents
 
-- [Overview](#overview)
-- [GitHub Setup](#github-setup)
-  - [Create GitHub Account](#1-create-github-account)
-  - [Install GitHub Desktop](#2-install-github-desktop)
-  - [Set Up SSH Keys](#3-set-up-ssh-keys)
-  - [Configure Git](#4-configure-git)
-- [Essential Tools](#essential-tools)
-  - [VS Code](#vs-code)
-  - [Homebrew](#homebrew)
-- [Directory Structure](#directory-structure)
-- [Shell Configuration](#shell-configuration)
-- [Python Environment Setup with uv](#python-environment-setup-with-uv)
-- [AWS and S3 Access](#aws-and-s3-access)
-  - [Configure AWS Credentials](#1-configure-aws-credentials)
-  - [Install AWS CLI Tools](#2-install-aws-cli-tools)
-  - [Verify AWS Access](#3-verify-aws-access)
-- [S3 Bucket Mounting (rclone + FUSE-T)](#s3-bucket-mounting-rclone--fuse-t)
-  - [Install FUSE-T](#1-install-fuse-t)
-  - [Install rclone](#2-install-rclone)
-  - [Configure rclone](#3-configure-rclone)
-  - [Download Mount Scripts](#4-download-mount-scripts)
-  - [Mount a Bucket](#5-mount-a-bucket)
-  - [Access via Finder](#6-access-via-finder)
-  - [Unmount (optional)](#7-unmount-optional)
-- [Python S3 Access (fsspec)](#python-s3-access-fsspec)
-- [Optional Tools](#optional-tools)
-  - [Docker Desktop](#docker-desktop)
-  - [JupyterLab Desktop](#jupyterlab-desktop)
-- [Quick Reference](#quick-reference)
+-   [Overview](#overview)
+-   [GitHub Setup](#github-setup)
+    -   [Create GitHub Account](#1-create-github-account)
+    -   [Install GitHub Desktop](#2-install-github-desktop)
+    -   [Set Up SSH Keys](#3-set-up-ssh-keys)
+    -   [Configure Git](#4-configure-git)
+-   [Essential Tools](#essential-tools)
+    -   [VS Code](#vs-code)
+    -   [Homebrew](#homebrew)
+-   [Directory Structure](#directory-structure)
+-   [Shell Configuration](#shell-configuration)
+-   [Python Environment Setup with uv](#python-environment-setup-with-uv)
+-   [AWS and S3 Access](#aws-and-s3-access)
+    -   [Configure AWS Credentials](#1-configure-aws-credentials)
+    -   [Install AWS CLI Tools](#2-install-aws-cli-tools)
+    -   [Verify AWS Access](#3-verify-aws-access)
+-   [S3 Bucket Mounting (rclone + FUSE-T)](#s3-bucket-mounting-rclone--fuse-t)
+    -   [Install FUSE-T](#1-install-fuse-t)
+    -   [Install rclone](#2-install-rclone)
+    -   [Configure rclone](#3-configure-rclone)
+    -   [Download Mount Scripts](#4-download-mount-scripts)
+    -   [Mount a Bucket](#5-mount-a-bucket)
+    -   [Access via Finder](#6-access-via-finder)
+    -   [Unmount (optional)](#7-unmount-optional)
+-   [Python S3 Access (fsspec)](#python-s3-access-fsspec)
+-   [Optional Tools](#optional-tools)
+    -   [Docker Desktop](#docker-desktop)
+    -   [JupyterLab Desktop](#jupyterlab-desktop)
+-   [Quick Reference](#quick-reference)
 
 ---
 
@@ -40,12 +40,12 @@ This guide covers setting up your local macOS laptop for Vision Lab development 
 
 Your laptop setup mirrors the cluster environment where possible:
 
-| Component | Cluster | Laptop |
-|-----------|---------|--------|
-| Python environments | uv | uv |
-| S3 access (Python) | fsspec/s3fs | fsspec/s3fs |
-| S3 mounting | rclone FUSE | rclone + FUSE-T |
-| AWS credentials | Environment variables | Environment variables |
+| Component           | Cluster               | Laptop                |
+| ------------------- | --------------------- | --------------------- |
+| Python environments | uv                    | uv                    |
+| S3 access (Python)  | fsspec/s3fs           | fsspec/s3fs           |
+| S3 mounting         | rclone FUSE           | rclone + FUSE-T       |
+| AWS credentials     | Environment variables | Environment variables |
 
 This consistency means code that works on your laptop will work on the cluster (and vice versa).
 
@@ -70,6 +70,7 @@ GitHub Desktop provides a visual interface for Git operations. Even if you prefe
 Download and install from: https://desktop.github.com/
 
 After installation:
+
 1. Open GitHub Desktop
 2. Sign in with your GitHub account
 3. It will prompt you to configure Git (name and email) - do this in the next step
@@ -104,9 +105,9 @@ ssh-add ~/.ssh/id_ed25519
 **Add key to GitHub (on the website, not the desktop app):**
 
 1. Copy your public key:
-   ```bash
-   pbcopy < ~/.ssh/id_ed25519.pub
-   ```
+    ```bash
+    pbcopy < ~/.ssh/id_ed25519.pub
+    ```
 2. Open https://github.com/settings/keys in your browser
 3. Click "New SSH key"
 4. Give it a title (e.g., "MacBook Pro") and paste the key
@@ -168,9 +169,9 @@ Download and install from: https://code.visualstudio.com/
 
 **Recommended extensions:**
 
-- **Python** (Microsoft) - Python language support
-- **Pylance** - Fast Python language server
-- **Remote - SSH** - Connect to the cluster from VS Code
+-   **Python** (Microsoft) - Python language support
+-   **Pylance** - Fast Python language server
+-   **Remote - SSH** - Connect to the cluster from VS Code
 
 Install from the Extensions panel (`Cmd+Shift+X`) or via command line:
 
@@ -206,8 +207,8 @@ Follow the post-install instructions to add Homebrew to your PATH (it will print
 
 Choose a local folder as your work directory. Common choices:
 
-- `~/Work` - dedicated work folder
-- `~/Documents` - if you prefer keeping everything in Documents
+-   `~/Work` - dedicated work folder
+-   `~/Documents` - if you prefer keeping everything in Documents
 
 Within your work directory, we recommend this structure:
 
@@ -493,13 +494,12 @@ Open Finder and navigate to your Buckets folder:
 2. Enter your bucket path, e.g., `~/Work/Buckets/visionlab-members`
 3. You should see the S3 bucket contents
 
-**Tip:** Drag your personal folder (`visionlab-members/$VISLAB_USERNAME`) to the Finder sidebar to create a shortcut for quick access.
-
 You can use Finder to:
-- Browse files in your S3 bucket
-- Drag-and-drop files to upload them
-- Copy/paste files between your laptop and S3
-- Delete files (right-click → Move to Trash)
+
+-   Browse files in your S3 bucket
+-   Drag-and-drop files to upload them
+-   Copy/paste files between your laptop and S3
+-   Delete files (right-click → Move to Trash)
 
 The mount survives sleep/wake. If you reboot, just re-run the mount script.
 
@@ -619,9 +619,10 @@ rm -rf $SANDBOX_DIR/s3-test
 ### Docker Desktop
 
 Docker is useful for:
-- Running containerized applications
-- Testing deployment configurations
-- Reproducing cluster environments locally
+
+-   Running containerized applications
+-   Testing deployment configurations
+-   Reproducing cluster environments locally
 
 Install from: https://www.docker.com/products/docker-desktop/
 
@@ -754,9 +755,9 @@ df.to_parquet(f's3://visionlab-members/{username}/output.parquet')
 
 You've now configured your macOS laptop for Vision Lab work:
 
-- **uv** manages Python environments (same as cluster)
-- **AWS credentials** are set via environment variables
-- **fsspec** provides programmatic S3 access
-- **rclone + FUSE-T** enables filesystem-like S3 mounting
+-   **uv** manages Python environments (same as cluster)
+-   **AWS credentials** are set via environment variables
+-   **fsspec** provides programmatic S3 access
+-   **rclone + FUSE-T** enables filesystem-like S3 mounting
 
 Your code will work seamlessly across your laptop, the Harvard cluster, and other lab environments.
