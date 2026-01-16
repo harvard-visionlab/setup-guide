@@ -27,7 +27,7 @@ We are building a comprehensive setup guide covering multiple environments (Harv
 - [ ] Module loading (if needed)
 
 #### Other Environments
-- [ ] Laptop setup guide (macOS/Linux)
+- [x] Laptop setup guide (macOS) - see `docs/laptop-macos.md`
 - [ ] Lightning AI setup guide
 - [ ] Lab workstations (Lambda Labs GPUs) setup guide
 
@@ -73,7 +73,8 @@ setup/
 ├── README.md                   # Repo overview and quick start
 ├── CLAUDE.md                   # This file (project tracking)
 ├── docs/
-│   └── harvard-cluster.md      # Main Harvard cluster setup guide
+│   ├── harvard-cluster.md      # Main Harvard cluster setup guide
+│   └── laptop-macos.md         # macOS laptop setup guide
 ├── scripts/
 │   ├── s3_bucket_mount.sh      # Mount S3 bucket via rclone FUSE
 │   ├── s3_bucket_unmount.sh    # Unmount S3 bucket
@@ -83,7 +84,6 @@ setup/
 ```
 
 Future additions:
-- `docs/laptop.md` - Laptop setup guide
 - `docs/lightning-ai.md` - Lightning AI setup
 - `docs/lab-workstations.md` - Lambda Labs workstations
 

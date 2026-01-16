@@ -1,0 +1,691 @@
+# Laptop Setup Guide (macOS)
+
+This guide covers setting up your local macOS laptop for Vision Lab development work.
+
+## Table of Contents
+
+- [Overview](#overview)
+- [GitHub Setup](#github-setup)
+  - [Create GitHub Account](#1-create-github-account)
+  - [Install GitHub Desktop](#2-install-github-desktop)
+  - [Set Up SSH Keys](#3-set-up-ssh-keys)
+  - [Configure Git](#4-configure-git)
+- [Essential Tools](#essential-tools)
+  - [VS Code](#vs-code)
+  - [Homebrew](#homebrew)
+- [Directory Structure](#directory-structure)
+- [Shell Configuration](#shell-configuration)
+- [Python Environment Setup with uv](#python-environment-setup-with-uv)
+- [AWS and S3 Access](#aws-and-s3-access)
+  - [Configure AWS Credentials](#1-configure-aws-credentials)
+  - [Install AWS CLI Tools](#2-install-aws-cli-tools)
+  - [Verify AWS Access](#3-verify-aws-access)
+- [S3 Bucket Mounting (rclone + FUSE-T)](#s3-bucket-mounting-rclone--fuse-t)
+  - [Install FUSE-T](#1-install-fuse-t)
+  - [Install rclone](#2-install-rclone)
+  - [Configure rclone](#3-configure-rclone)
+  - [Mount Buckets](#4-mount-buckets)
+- [Optional Tools](#optional-tools)
+  - [Docker Desktop](#docker-desktop)
+  - [JupyterLab Desktop](#jupyterlab-desktop)
+- [Quick Reference](#quick-reference)
+
+---
+
+## Overview
+
+Your laptop setup mirrors the cluster environment where possible:
+
+| Component | Cluster | Laptop |
+|-----------|---------|--------|
+| Python environments | uv | uv |
+| S3 access (Python) | fsspec/s3fs | fsspec/s3fs |
+| S3 mounting | rclone FUSE | rclone + FUSE-T |
+| AWS credentials | Environment variables | Environment variables |
+
+This consistency means code that works on your laptop will work on the cluster (and vice versa).
+
+---
+
+## GitHub Setup
+
+All lab code is stored on GitHub. You'll need an account, SSH keys for accessing private repositories, and Git configured on your machine.
+
+### 1. Create GitHub Account
+
+If you don't already have a GitHub account:
+
+1. Go to https://github.com/join
+2. Create an account (use your personal email or Harvard email)
+3. Ask George to add you to the [harvard-visionlab](https://github.com/harvard-visionlab) organization
+
+### 2. Install GitHub Desktop
+
+GitHub Desktop provides a visual interface for Git operations. Even if you prefer the command line, it's useful for visualizing changes and resolving merge conflicts.
+
+Download and install from: https://desktop.github.com/
+
+After installation:
+1. Open GitHub Desktop
+2. Sign in with your GitHub account
+3. It will prompt you to configure Git (name and email) - do this in the next step
+
+### 3. Set Up SSH Keys
+
+SSH keys let you access private repositories without entering your password each time.
+
+**Check for existing keys:**
+
+```bash
+ls -la ~/.ssh
+```
+
+If you see `id_ed25519` and `id_ed25519.pub` (or `id_rsa` and `id_rsa.pub`), you already have keys. Skip to "Add key to GitHub" below.
+
+**Generate a new SSH key:**
+
+```bash
+ssh-keygen -t ed25519 -C "your_email@example.com"
+```
+
+Press Enter to accept the default file location. You can optionally set a passphrase (recommended) or press Enter for no passphrase.
+
+**Start the SSH agent and add your key:**
+
+```bash
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_ed25519
+```
+
+**Add key to GitHub:**
+
+1. Copy your public key:
+   ```bash
+   pbcopy < ~/.ssh/id_ed25519.pub
+   ```
+2. Go to GitHub → Settings → SSH and GPG keys → New SSH key
+3. Give it a title (e.g., "MacBook Pro") and paste the key
+4. Click "Add SSH key"
+
+**Test the connection:**
+
+```bash
+ssh -T git@github.com
+```
+
+You should see: "Hi username! You've successfully authenticated..."
+
+### 4. Configure Git
+
+Set your name and email (used for commit messages):
+
+```bash
+git config --global user.name "Your Name"
+git config --global user.email "your_email@example.com"
+```
+
+Set the default branch name to `main`:
+
+```bash
+git config --global init.defaultBranch main
+```
+
+Verify your configuration:
+
+```bash
+git config --list
+```
+
+---
+
+## Essential Tools
+
+### VS Code
+
+VS Code is the recommended editor for lab work. It has excellent Python support, Git integration, and remote development capabilities (for connecting to the cluster).
+
+Download and install from: https://code.visualstudio.com/
+
+**Recommended extensions:**
+
+- **Python** (Microsoft) - Python language support
+- **Pylance** - Fast Python language server
+- **Remote - SSH** - Connect to the cluster from VS Code
+- **GitLens** - Enhanced Git features
+
+Install from the Extensions panel (`Cmd+Shift+X`) or via command line:
+
+```bash
+code --install-extension ms-python.python
+code --install-extension ms-python.vscode-pylance
+code --install-extension ms-vscode-remote.remote-ssh
+code --install-extension eamodio.gitlens
+```
+
+### Homebrew
+
+Homebrew is the package manager for macOS. Many tools in this guide are installed via Homebrew.
+
+Install Homebrew:
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+Follow the post-install instructions to add Homebrew to your PATH (it will print these after installation).
+
+Verify:
+
+```bash
+brew --version
+```
+
+---
+
+## Directory Structure
+
+**Important:** Keep your code repositories outside of cloud-synced folders (Dropbox, iCloud, Google Drive). These services can corrupt Git repositories and cause sync conflicts.
+
+Recommended structure:
+
+```
+~/Documents/GitHub/    # All your Git repositories go here
+~/Buckets/             # S3 bucket mounts (optional)
+~/Sandbox/             # Testing and scratch work
+```
+
+Create the directories:
+
+```bash
+mkdir -p ~/Documents/GitHub ~/Buckets ~/Sandbox
+```
+
+When you clone lab repositories:
+
+```bash
+cd ~/Documents/GitHub
+git clone git@github.com:harvard-visionlab/some-project.git
+```
+
+---
+
+## Shell Configuration
+
+Add the following to your shell configuration file (`~/.zshrc` for macOS Catalina and later, or `~/.bashrc` if using bash):
+
+```bash
+nano ~/.zshrc  # or ~/.bashrc
+```
+
+Add these lines:
+
+```bash
+# ==============================================================================
+# Vision Lab Configuration (macOS)
+# ==============================================================================
+
+# AWS credentials - get these from George
+# IMPORTANT: Keep these secret! Never commit to git or share publicly.
+export AWS_ACCESS_KEY_ID=your_access_key_here
+export AWS_SECRET_ACCESS_KEY=your_secret_key_here
+export AWS_REGION=us-east-1
+
+# Local directory structure
+export PROJECT_DIR=~/Documents/GitHub  # Git repos (NOT in Dropbox/iCloud!)
+export BUCKET_DIR=~/Buckets            # S3 bucket mounts
+export SANDBOX_DIR=~/Sandbox           # Testing/scratch
+
+# uv configuration
+export UV_CACHE_DIR=~/.uv_cache
+export UV_TOOL_DIR=~/.uv_tools
+
+# Add uv tools to PATH (for s5cmd, etc.)
+export PATH="$HOME/.local/bin:$PATH"
+```
+
+Reload your shell:
+
+```bash
+source ~/.zshrc  # or source ~/.bashrc
+```
+
+---
+
+## Python Environment Setup with uv
+
+We use [uv](https://docs.astral.sh/uv/) for Python environment management. It's faster than conda/pip and creates reproducible environments.
+
+### Install uv
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+Restart your terminal or run:
+
+```bash
+source ~/.zshrc
+```
+
+Verify installation:
+
+```bash
+uv --version
+```
+
+### Create a Test Project
+
+```bash
+cd ~/Sandbox
+mkdir test-project && cd test-project
+uv init
+uv add numpy pandas ipykernel
+```
+
+Run Python in the environment:
+
+```bash
+uv run python -c "import numpy; print(f'NumPy {numpy.__version__} works!')"
+```
+
+### Clean Up
+
+```bash
+rm -rf ~/Sandbox/test-project
+```
+
+---
+
+## AWS and S3 Access
+
+### 1. Configure AWS Credentials
+
+Your AWS credentials should already be in your shell config (see [Shell Configuration](#shell-configuration)). Verify they're set:
+
+```bash
+echo $AWS_ACCESS_KEY_ID | head -c 8
+# Should show first 8 characters of your key
+```
+
+If empty, get your credentials from George and add them to `~/.zshrc`.
+
+### 2. Install AWS CLI Tools
+
+**AWS CLI v2:**
+
+```bash
+cd /tmp
+curl "https://awscli.amazonaws.com/AWSCLIV2.pkg" -o "AWSCLIV2.pkg"
+sudo installer -pkg AWSCLIV2.pkg -target /
+rm AWSCLIV2.pkg
+```
+
+**s5cmd** (fast parallel S3 operations):
+
+```bash
+uv tool install s5cmd
+```
+
+Verify installation:
+
+```bash
+aws --version   # Should show v2.x
+s5cmd version   # Should show v2.x
+```
+
+### 3. Verify AWS Access
+
+```bash
+# List buckets
+aws s3 ls
+
+# List contents of lab bucket
+s5cmd ls s3://visionlab-members/
+```
+
+You should see `visionlab-members`, `visionlab-datasets`, and other lab buckets.
+
+### Python Access (fsspec)
+
+For programmatic S3 access, use fsspec:
+
+```bash
+cd ~/Sandbox
+mkdir s3-test && cd s3-test
+uv init
+uv add fsspec s3fs
+```
+
+Test in Python:
+
+```bash
+uv run python << 'EOF'
+import os
+import fsspec
+
+fs = fsspec.filesystem('s3')
+user = os.getenv('USER')
+
+# List your testing directory
+print(f"Listing s3://visionlab-members/{user}/testing/")
+try:
+    files = fs.ls(f'visionlab-members/{user}/testing/')
+    for f in files:
+        print(f"  {f}")
+except FileNotFoundError:
+    print("  (empty or doesn't exist yet)")
+
+# Write a test file
+test_path = f's3://visionlab-members/{user}/testing/laptop-test.txt'
+with fs.open(test_path, 'w') as f:
+    f.write('Hello from my laptop!')
+print(f"\nWrote: {test_path}")
+
+# Read it back
+with fs.open(test_path, 'r') as f:
+    print(f"Read: {f.read()}")
+EOF
+```
+
+Clean up:
+
+```bash
+rm -rf ~/Sandbox/s3-test
+```
+
+---
+
+## S3 Bucket Mounting (rclone + FUSE-T)
+
+For filesystem-like access to S3 buckets (treating them as local directories), we use rclone with FUSE-T.
+
+### 1. Install FUSE-T
+
+FUSE-T is a kext-less FUSE implementation for macOS (doesn't require kernel extensions).
+
+First, remove any conflicting FUSE implementations:
+
+```bash
+brew uninstall --cask macfuse 2>/dev/null
+brew uninstall --cask osxfuse 2>/dev/null
+```
+
+Install FUSE-T:
+
+```bash
+brew install --cask fuse-t
+```
+
+Verify installation:
+
+```bash
+ls -la /Library/Frameworks/fuse_t.framework
+```
+
+You should see the framework directory.
+
+### 2. Install rclone
+
+Use the official rclone binary (not Homebrew's version):
+
+```bash
+# Remove Homebrew rclone if present
+brew uninstall rclone 2>/dev/null
+
+# Download and install official binary
+cd /tmp
+curl -O https://downloads.rclone.org/rclone-current-osx-arm64.zip
+unzip rclone-current-osx-arm64.zip
+cd rclone-*-osx-arm64
+sudo mkdir -p /usr/local/bin
+sudo cp rclone /usr/local/bin/
+sudo chmod +x /usr/local/bin/rclone
+cd ..
+rm -rf rclone-*-osx-arm64*
+```
+
+Verify:
+
+```bash
+which rclone        # Should show /usr/local/bin/rclone
+rclone version      # Should show version info
+```
+
+### 3. Configure rclone
+
+Create the rclone config:
+
+```bash
+mkdir -p ~/.config/rclone
+
+cat > ~/.config/rclone/rclone.conf << 'EOF'
+[s3_remote]
+type = s3
+provider = AWS
+env_auth = true
+region = us-east-1
+EOF
+```
+
+Verify rclone can access your buckets:
+
+```bash
+rclone lsd s3_remote:
+```
+
+You should see `visionlab-members`, `visionlab-datasets`, etc.
+
+### 4. Mount Buckets
+
+#### Option A: Use the visionlab-buckets package (recommended)
+
+The `visionlab-buckets` package provides a clean Python API and CLI for mounting:
+
+```bash
+uv tool install visionlab-buckets
+```
+
+Mount a bucket:
+
+```bash
+cd ~/Buckets
+mount-bucket visionlab-members
+```
+
+This creates a symlink at `~/Buckets/visionlab-members` pointing to the actual mount.
+
+List active mounts:
+
+```bash
+mount-bucket --list
+```
+
+Unmount:
+
+```bash
+unmount-bucket visionlab-members
+```
+
+#### Option B: Manual mounting
+
+If you prefer direct rclone commands:
+
+```bash
+# Create mount point
+mkdir -p /tmp/$USER/rclone/visionlab-members
+
+# Mount in background
+rclone mount s3_remote:visionlab-members /tmp/$USER/rclone/visionlab-members \
+    --daemon \
+    --vfs-cache-mode writes \
+    --dir-cache-time 30s \
+    --log-file /tmp/$USER/rclone-visionlab-members.log
+
+# Create symlink for easy access
+ln -sf /tmp/$USER/rclone/visionlab-members ~/Buckets/visionlab-members
+
+# Verify
+ls ~/Buckets/visionlab-members/
+```
+
+To unmount:
+
+```bash
+umount /tmp/$USER/rclone/visionlab-members
+rm ~/Buckets/visionlab-members
+```
+
+#### When to use mounted buckets
+
+Mount S3 when your code expects local file paths:
+
+- Training frameworks that read data from disk
+- Legacy code using `open()` or `os.path`
+- Tools that don't support S3 URLs
+
+For new code, prefer **fsspec** - it's simpler and doesn't require mount management.
+
+---
+
+## Optional Tools
+
+### Docker Desktop
+
+Docker is useful for:
+- Running containerized applications
+- Testing deployment configurations
+- Reproducing cluster environments locally
+
+Install from: https://www.docker.com/products/docker-desktop/
+
+Or via Homebrew:
+
+```bash
+brew install --cask docker
+```
+
+After installation, open Docker Desktop from Applications to complete setup.
+
+Verify:
+
+```bash
+docker --version
+docker run hello-world
+```
+
+### JupyterLab Desktop
+
+JupyterLab Desktop provides a native app experience for Jupyter notebooks.
+
+Install from: https://github.com/jupyterlab/jupyterlab-desktop/releases
+
+Or via Homebrew:
+
+```bash
+brew install --cask jupyterlab
+```
+
+**Using with uv projects:**
+
+JupyterLab Desktop can use your uv project environments:
+
+1. Open JupyterLab Desktop
+2. Navigate to your project directory
+3. Open a notebook
+4. Select the Python interpreter from your project's `.venv`
+
+Alternatively, run JupyterLab through uv in any project:
+
+```bash
+cd ~/Projects/my-project
+uv add jupyterlab
+uv run jupyter lab
+```
+
+This opens JupyterLab in your browser with the project's environment.
+
+---
+
+## Quick Reference
+
+### Environment Variables
+
+```bash
+$AWS_ACCESS_KEY_ID      # Your AWS access key (keep secret!)
+$AWS_SECRET_ACCESS_KEY  # Your AWS secret key (keep secret!)
+$AWS_REGION             # us-east-1
+$PROJECT_DIR            # ~/Documents/GitHub
+$BUCKET_DIR             # ~/Buckets
+$SANDBOX_DIR            # ~/Sandbox
+$UV_CACHE_DIR           # ~/.uv_cache
+$UV_TOOL_DIR            # ~/.uv_tools
+```
+
+### Common Commands
+
+**uv (Python environments):**
+
+```bash
+uv init                    # Initialize a new project
+uv add <package>           # Add a dependency
+uv sync                    # Install from lockfile
+uv run <command>           # Run in environment
+```
+
+**S3 access:**
+
+```bash
+# CLI
+aws s3 ls s3://bucket/path/
+s5cmd ls s3://bucket/path/
+s5cmd cp local.txt s3://bucket/path/
+
+# Mount (with visionlab-buckets)
+mount-bucket visionlab-members
+unmount-bucket visionlab-members
+mount-bucket --list
+```
+
+**rclone:**
+
+```bash
+rclone lsd s3_remote:              # List buckets
+rclone ls s3_remote:bucket/path/   # List files
+rclone copy local/ s3_remote:bucket/path/  # Upload
+```
+
+### Python S3 Access
+
+```python
+import fsspec
+
+fs = fsspec.filesystem('s3')
+
+# List files
+fs.ls('visionlab-members/user/path/')
+
+# Read/write
+with fs.open('s3://bucket/path/file.txt', 'r') as f:
+    content = f.read()
+
+with fs.open('s3://bucket/path/file.txt', 'w') as f:
+    f.write('content')
+
+# Works with pandas
+import pandas as pd
+df = pd.read_parquet('s3://bucket/path/data.parquet')
+df.to_parquet('s3://bucket/path/output.parquet')
+```
+
+---
+
+## Summary
+
+You've now configured your macOS laptop for Vision Lab work:
+
+- **uv** manages Python environments (same as cluster)
+- **AWS credentials** are set via environment variables
+- **fsspec** provides programmatic S3 access
+- **rclone + FUSE-T** enables filesystem-like S3 mounting
+
+Your code will work seamlessly across your laptop, the Harvard cluster, and other lab environments.
