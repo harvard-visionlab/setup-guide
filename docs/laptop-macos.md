@@ -300,7 +300,7 @@ uv --version
 ### Create a Test Project
 
 ```bash
-cd ~/Sandbox
+cd $SANDBOX_DIR
 mkdir test-project && cd test-project
 uv init
 uv add numpy pandas ipykernel
@@ -315,7 +315,7 @@ uv run python -c "import numpy; print(f'NumPy {numpy.__version__} works!')"
 ### Clean Up
 
 ```bash
-rm -rf ~/Sandbox/test-project
+rm -rf $SANDBOX_DIR/test-project
 ```
 
 ---
@@ -374,7 +374,7 @@ You should see `visionlab-members`, `visionlab-datasets`, and other lab buckets.
 For programmatic S3 access, use fsspec:
 
 ```bash
-cd ~/Sandbox
+cd $SANDBOX_DIR
 mkdir s3-test && cd s3-test
 uv init
 uv add fsspec s3fs
@@ -414,7 +414,7 @@ EOF
 Clean up:
 
 ```bash
-rm -rf ~/Sandbox/s3-test
+rm -rf $SANDBOX_DIR/s3-test
 ```
 
 ---
@@ -512,11 +512,11 @@ uv tool install visionlab-buckets
 Mount a bucket:
 
 ```bash
-cd ~/Buckets
+cd $BUCKET_DIR
 mount-bucket visionlab-members
 ```
 
-This creates a symlink at `~/Buckets/visionlab-members` pointing to the actual mount.
+This creates a symlink at `$BUCKET_DIR/visionlab-members` pointing to the actual mount.
 
 List active mounts:
 
@@ -546,17 +546,17 @@ rclone mount s3_remote:visionlab-members /tmp/$USER/rclone/visionlab-members \
     --log-file /tmp/$USER/rclone-visionlab-members.log
 
 # Create symlink for easy access
-ln -sf /tmp/$USER/rclone/visionlab-members ~/Buckets/visionlab-members
+ln -sf /tmp/$USER/rclone/visionlab-members $BUCKET_DIR/visionlab-members
 
 # Verify
-ls ~/Buckets/visionlab-members/
+ls $BUCKET_DIR/visionlab-members/
 ```
 
 To unmount:
 
 ```bash
 umount /tmp/$USER/rclone/visionlab-members
-rm ~/Buckets/visionlab-members
+rm $BUCKET_DIR/visionlab-members
 ```
 
 #### When to use mounted buckets
