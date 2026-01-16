@@ -335,7 +335,7 @@ If empty, get your credentials from George and add them to `~/.zshrc`.
 
 ### 2. Install AWS CLI Tools
 
-**AWS CLI v2:**
+**AWS CLI v2** (macOS instructions - see [official docs](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) for other platforms):
 
 ```bash
 curl "https://awscli.amazonaws.com/AWSCLIV2.pkg" -o "AWSCLIV2.pkg"
