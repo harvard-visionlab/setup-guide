@@ -167,6 +167,21 @@ VS Code is the recommended editor for lab work. It has excellent Python support,
 
 Download and install from: https://code.visualstudio.com/
 
+**Enable the `code` command in terminal:**
+
+1. Open VS Code
+2. Press `Cmd+Shift+P` to open the Command Palette
+3. Type "shell command" and select **Shell Command: Install 'code' command in PATH**
+4. Restart your terminal
+
+Verify it works:
+
+```bash
+code --version
+```
+
+Now you can open any folder in VS Code from terminal with `code .`
+
 **Recommended extensions:**
 
 -   **Python** (Microsoft) - Python language support
@@ -310,7 +325,7 @@ uv --version
 
 ```bash
 cd $SANDBOX_DIR
-mkdir test-project && cd test-project
+mkdir -p test-project && cd test-project
 uv init
 uv add numpy pandas ipykernel
 ```
@@ -528,7 +543,7 @@ For programmatic S3 access, we use `fsspec` with the `s3fs` backend. Let's test 
 
 ```bash
 cd $SANDBOX_DIR
-mkdir s3-test && cd s3-test
+mkdir -p s3-test && cd s3-test
 uv init
 uv add fsspec s3fs
 ```
