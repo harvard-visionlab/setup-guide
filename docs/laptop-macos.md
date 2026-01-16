@@ -31,7 +31,7 @@ This guide covers setting up your local macOS laptop for Vision Lab development 
 -   [Python S3 Access (fsspec)](#python-s3-access-fsspec)
 -   [Optional Tools](#optional-tools)
     -   [Docker Desktop](#docker-desktop)
-    -   [JupyterLab Desktop](#jupyterlab-desktop)
+    -   [JupyterLab](#jupyterlab)
 -   [Quick Reference](#quick-reference)
 
 ---
@@ -650,11 +650,9 @@ docker --version
 docker run hello-world
 ```
 
-### JupyterLab Desktop
+### JupyterLab
 
-JupyterLab Desktop provides a native app experience for Jupyter notebooks.
-
-Download and install from: https://github.com/jupyterlab/jupyterlab-desktop/releases
+JupyterLab runs in your browser and is launched from your project directory.
 
 #### Install the "Python (uv auto)" Kernel
 
@@ -676,6 +674,8 @@ cat > ~/.local/share/jupyter/kernels/python-uv/kernel.json << 'EOF'
 EOF
 ```
 
+This kernel is portable - notebooks using it will work on any system (laptop, cluster, etc.) where you've set up uv.
+
 #### Quick Demo
 
 Create a test project:
@@ -690,7 +690,7 @@ uv add jupyterlab ipykernel numpy pandas seaborn
 Run JupyterLab:
 
 ```bash
-uv run jupyter lab
+JUPYTER_PATH=~/.local/share/jupyter uv run jupyter lab
 ```
 
 This opens JupyterLab in your browser:
