@@ -679,6 +679,20 @@ EOF
 
 This kernel is portable - notebooks using it will work on any system (laptop, cluster, etc.) where you've set up uv.
 
+#### Configure Retina Display Support
+
+For crisp plots on macOS Retina displays, configure IPython to render figures at 2x resolution:
+
+```bash
+mkdir -p ~/.ipython/profile_default
+
+cat > ~/.ipython/profile_default/ipython_kernel_config.py << 'EOF'
+c.InlineBackend.figure_format = 'retina'
+EOF
+```
+
+This applies to all notebooks automatically.
+
 #### Quick Demo
 
 Create a test project:
