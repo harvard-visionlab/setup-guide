@@ -24,7 +24,9 @@ This guide covers setting up your local macOS laptop for Vision Lab development 
   - [Install FUSE-T](#1-install-fuse-t)
   - [Install rclone](#2-install-rclone)
   - [Configure rclone](#3-configure-rclone)
-  - [Mount Buckets](#4-mount-buckets)
+  - [Mount a Bucket](#4-mount-a-bucket)
+  - [Unmount](#5-unmount)
+- [Python S3 Access (fsspec)](#python-s3-access-fsspec)
 - [Optional Tools](#optional-tools)
   - [Docker Desktop](#docker-desktop)
   - [JupyterLab Desktop](#jupyterlab-desktop)
@@ -377,55 +379,6 @@ s5cmd ls s3://visionlab-members/
 
 You should see `visionlab-members`, `visionlab-datasets`, and other lab buckets.
 
-### Python Access (fsspec)
-
-For programmatic S3 access, use fsspec:
-
-```bash
-cd $SANDBOX_DIR
-mkdir s3-test && cd s3-test
-uv init
-uv add fsspec s3fs
-```
-
-Test in Python:
-
-```bash
-uv run python << 'EOF'
-import os
-import fsspec
-
-fs = fsspec.filesystem('s3')
-# Use VISLAB_USERNAME (your FASRC username) for S3 paths, not USER (local macOS username)
-username = os.getenv('VISLAB_USERNAME')
-
-# List your testing directory
-print(f"Listing s3://visionlab-members/{username}/testing/")
-try:
-    files = fs.ls(f'visionlab-members/{username}/testing/')
-    for f in files:
-        print(f"  {f}")
-except FileNotFoundError:
-    print("  (empty or doesn't exist yet)")
-
-# Write a test file
-test_path = f's3://visionlab-members/{username}/testing/laptop-test.txt'
-with fs.open(test_path, 'w') as f:
-    f.write('Hello from my laptop!')
-print(f"\nWrote: {test_path}")
-
-# Read it back
-with fs.open(test_path, 'r') as f:
-    print(f"Read: {f.read()}")
-EOF
-```
-
-Clean up:
-
-```bash
-rm -rf $SANDBOX_DIR/s3-test
-```
-
 ---
 
 ## S3 Bucket Mounting (rclone + FUSE-T)
@@ -508,40 +461,7 @@ rclone lsd s3_remote:
 
 You should see `visionlab-members`, `visionlab-datasets`, etc.
 
-### 4. Mount Buckets
-
-#### Option A: Use the visionlab-buckets package (recommended)
-
-The `visionlab-buckets` package provides a clean Python API and CLI for mounting:
-
-```bash
-uv tool install visionlab-buckets
-```
-
-Mount a bucket:
-
-```bash
-cd $BUCKET_DIR
-mount-bucket visionlab-members
-```
-
-This creates a symlink at `$BUCKET_DIR/visionlab-members` pointing to the actual mount.
-
-List active mounts:
-
-```bash
-mount-bucket --list
-```
-
-Unmount:
-
-```bash
-unmount-bucket visionlab-members
-```
-
-#### Option B: Manual mounting
-
-If you prefer direct rclone commands:
+### 4. Mount a Bucket
 
 ```bash
 # Create mount point
@@ -556,19 +476,26 @@ rclone mount s3_remote:visionlab-members /tmp/$USER/rclone/visionlab-members \
 
 # Create symlink for easy access
 ln -sf /tmp/$USER/rclone/visionlab-members $BUCKET_DIR/visionlab-members
+```
 
-# Verify
+Verify the mount:
+
+```bash
 ls $BUCKET_DIR/visionlab-members/
 ```
 
-To unmount:
+You should see the contents of the S3 bucket.
+
+### 5. Unmount
+
+When done, unmount the bucket:
 
 ```bash
 umount /tmp/$USER/rclone/visionlab-members
 rm $BUCKET_DIR/visionlab-members
 ```
 
-#### When to use mounted buckets
+### When to use mounted buckets
 
 Mount S3 when your code expects local file paths:
 
@@ -576,7 +503,101 @@ Mount S3 when your code expects local file paths:
 - Legacy code using `open()` or `os.path`
 - Tools that don't support S3 URLs
 
-For new code, prefer **fsspec** - it's simpler and doesn't require mount management.
+For new code, prefer **fsspec** (next section) - it's simpler and doesn't require mount management.
+
+---
+
+## Python S3 Access (fsspec)
+
+For programmatic S3 access, we use `fsspec` with the `s3fs` backend. Let's test this using VS Code.
+
+### Create the test project
+
+```bash
+cd $SANDBOX_DIR
+mkdir s3-test && cd s3-test
+uv init
+uv add fsspec s3fs
+```
+
+### Open in VS Code
+
+```bash
+code .
+```
+
+This opens VS Code in the `s3-test` directory.
+
+### Create a test script
+
+1. In VS Code, create a new file: **File → New File** (or `Cmd+N`)
+2. Save it as `test_s3.py` (or `Cmd+S`, then type `test_s3.py`)
+3. Paste the following code:
+
+```python
+import os
+import fsspec
+
+fs = fsspec.filesystem('s3')
+
+# Use VISLAB_USERNAME (your FASRC username) for S3 paths
+username = os.getenv('VISLAB_USERNAME')
+if not username:
+    raise ValueError("VISLAB_USERNAME not set! Check your ~/.zshrc has: export VISLAB_USERNAME=...")
+
+print(f"Username: {username}")
+
+# List your testing directory
+print(f"\nListing s3://visionlab-members/{username}/testing/")
+try:
+    files = fs.ls(f'visionlab-members/{username}/testing/')
+    for f in files:
+        print(f"  {f}")
+except FileNotFoundError:
+    print("  (empty or doesn't exist yet)")
+
+# Write a test file
+test_path = f's3://visionlab-members/{username}/testing/laptop-test.txt'
+with fs.open(test_path, 'w') as f:
+    f.write('Hello from my laptop!')
+print(f"\nWrote: {test_path}")
+
+# Read it back
+with fs.open(test_path, 'r') as f:
+    print(f"Read: {f.read()}")
+
+print("\nS3 access is working!")
+```
+
+### Run the script
+
+Open the VS Code terminal (**Terminal → New Terminal** or `` Ctrl+` ``) and run:
+
+```bash
+uv run python test_s3.py
+```
+
+You should see output like:
+
+```
+Username: alvarez
+
+Listing s3://visionlab-members/alvarez/testing/
+  visionlab-members/alvarez/testing/laptop-test.txt
+
+Wrote: s3://visionlab-members/alvarez/testing/laptop-test.txt
+Read: Hello from my laptop!
+
+S3 access is working!
+```
+
+### Clean up
+
+When done testing, you can remove the project:
+
+```bash
+rm -rf $SANDBOX_DIR/s3-test
+```
 
 ---
 
