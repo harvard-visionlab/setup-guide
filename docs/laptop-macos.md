@@ -639,13 +639,7 @@ Docker is useful for:
 -   Testing deployment configurations
 -   Reproducing cluster environments locally
 
-Install from: https://www.docker.com/products/docker-desktop/
-
-Or via Homebrew:
-
-```bash
-brew install --cask docker
-```
+Download and install from: https://www.docker.com/products/docker-desktop/
 
 After installation, open Docker Desktop from Applications to complete setup.
 
@@ -662,7 +656,29 @@ JupyterLab Desktop provides a native app experience for Jupyter notebooks.
 
 Download and install from: https://github.com/jupyterlab/jupyterlab-desktop/releases
 
-**Quick demo - create a JupyterLab project:**
+#### Install the "Python (uv auto)" Kernel
+
+Run this once to install a kernel that automatically detects your project's uv environment:
+
+```bash
+mkdir -p ~/.local/share/jupyter/kernels/python-uv
+
+cat > ~/.local/share/jupyter/kernels/python-uv/kernel.json << 'EOF'
+{
+  "argv": [
+    "bash",
+    "-c",
+    "source ~/.zshrc && exec uv run python -m ipykernel -f {connection_file}"
+  ],
+  "display_name": "Python (uv auto)",
+  "language": "python"
+}
+EOF
+```
+
+#### Quick Demo
+
+Create a test project:
 
 ```bash
 cd $SANDBOX_DIR
@@ -677,7 +693,11 @@ Run JupyterLab:
 uv run jupyter lab
 ```
 
-This opens JupyterLab in your browser. Create a new notebook and try:
+This opens JupyterLab in your browser:
+
+1. Click **File → New → Notebook**
+2. Select **Python (uv auto)** as the kernel
+3. Try this code in a cell:
 
 ```python
 import numpy as np
