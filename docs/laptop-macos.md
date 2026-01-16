@@ -114,7 +114,22 @@ ssh-add ~/.ssh/id_ed25519
 ssh -T git@github.com
 ```
 
-You should see: "Hi username! You've successfully authenticated..."
+The first time you connect, you'll see a message like this (don't panic, this is normal!):
+
+```
+The authenticity of host 'github.com (140.82.114.3)' can't be established.
+ED25519 key fingerprint is SHA256:+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU
+This key is not known by any other names
+Are you sure you want to continue connecting (yes/no/[fingerprint])?
+```
+
+Type `yes` and press Enter. You should then see:
+
+```
+Hi tkonkle! You've successfully authenticated, but GitHub does not provide shell access.
+```
+
+This confirms your SSH key is working (the "does not provide shell access" part is expected).
 
 ### 4. Configure Git
 
