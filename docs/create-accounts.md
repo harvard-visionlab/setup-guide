@@ -42,7 +42,7 @@ Once your account is approved, set your password:
 
 ## 3. Submit Your Info to George
 
-Once you have your accounts, submit the following information to George:
+Once you have your accounts, Slack George (`@grez72`) with the following information:
 
 | Info | Where to find it | Example |
 |------|------------------|---------|
