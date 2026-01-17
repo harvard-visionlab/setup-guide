@@ -19,15 +19,20 @@ We are building a comprehensive setup guide covering multiple environments (Harv
 - [x] Documented symlink strategy (`.cache` -> netscratch, `.conda` -> tier1)
 - [x] AWS/S3 setup section (awscli, s5cmd, fsspec, boto3)
 - [x] S3 bucket mounting scripts (rclone FUSE)
+- [x] SLURM job submission basics
+- [x] Laptop setup guide (macOS) - see `docs/laptop-macos.md`
+- [x] Getting cluster access guide - see `docs/getting-cluster-access.md`
+- [x] Cluster usage guide - see `docs/cluster-usage.md`
+- [x] Terminal & SSH setup guide - see `docs/terminal-ssh-setup.md`
+- [x] Compute guidelines - see `docs/compute-guidelines.md`
 
 ### TODO
 
 #### Harvard Cluster Setup
-- [x] SLURM job submission basics
 - [ ] Module loading (if needed)
+- [ ] Add screenshots to cluster-usage.md (user must extract from PDFs)
 
 #### Other Environments
-- [x] Laptop setup guide (macOS) - see `docs/laptop-macos.md`
 - [ ] Lightning AI setup guide
 - [ ] Lab workstations (Lambda Labs GPUs) setup guide
 
@@ -73,8 +78,13 @@ setup/
 ├── README.md                   # Repo overview and quick start
 ├── CLAUDE.md                   # This file (project tracking)
 ├── docs/
-│   ├── harvard-cluster.md      # Main Harvard cluster setup guide
-│   └── laptop-macos.md         # macOS laptop setup guide
+│   ├── getting-cluster-access.md  # One-time account setup
+│   ├── harvard-cluster.md         # Environment configuration
+│   ├── cluster-usage.md           # Day-to-day cluster usage
+│   ├── terminal-ssh-setup.md      # Advanced SSH configuration
+│   ├── compute-guidelines.md      # Lab policies and best practices
+│   ├── slurm-basics.md            # SLURM job submission
+│   └── laptop-macos.md            # macOS laptop setup guide
 ├── scripts/
 │   ├── s3_bucket_mount.sh      # Mount S3 bucket via rclone FUSE
 │   ├── s3_bucket_unmount.sh    # Unmount S3 bucket

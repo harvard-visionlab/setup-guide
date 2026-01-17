@@ -6,13 +6,16 @@ Setup guides for Vision Lab members to configure their computing environments.
 
 ## Guides
 
-| Task                  | Guide                                              | Status  |
-| --------------------- | -------------------------------------------------- | ------- |
-| Setup Cluster Account | docs/getting-cluster-access.md                     | Planned |
-| Configure Cluster Home| [docs/harvard-cluster.md](docs/harvard-cluster.md) | Draft   |
-| Configure Laptop      | [docs/laptop-macos.md](docs/laptop-macos.md)       | Draft   |
-| Lightning AI          | docs/lightning-ai.md                               | Planned |
-| Lab Workstations      | docs/lab-workstations.md                           | Planned |
+| Task                  | Guide                                                            | Status  |
+| --------------------- | ---------------------------------------------------------------- | ------- |
+| Get Cluster Access    | [docs/getting-cluster-access.md](docs/getting-cluster-access.md) | Draft   |
+| Configure Cluster     | [docs/harvard-cluster.md](docs/harvard-cluster.md)               | Draft   |
+| Using the Cluster     | [docs/cluster-usage.md](docs/cluster-usage.md)                   | Draft   |
+| Terminal & SSH Setup  | [docs/terminal-ssh-setup.md](docs/terminal-ssh-setup.md)         | Draft   |
+| Compute Guidelines    | [docs/compute-guidelines.md](docs/compute-guidelines.md)         | Draft   |
+| Configure Laptop      | [docs/laptop-macos.md](docs/laptop-macos.md)                     | Draft   |
+| Lightning AI          | docs/lightning-ai.md                                             | Planned |
+| Lab Workstations      | docs/lab-workstations.md                                         | Planned |
 
 ## Project Management, Project Templates, and Workflows
 
