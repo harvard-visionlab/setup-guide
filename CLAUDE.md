@@ -21,6 +21,7 @@ We are building a comprehensive setup guide covering multiple environments (Harv
 - [x] S3 bucket mounting scripts (rclone FUSE)
 - [x] SLURM job submission basics
 - [x] Laptop setup guide (macOS) - see `docs/laptop-macos.md`
+- [x] Create accounts guide - see `docs/create-accounts.md`
 - [x] Getting cluster access guide - see `docs/getting-cluster-access.md`
 - [x] Cluster usage guide - see `docs/cluster-usage.md`
 - [x] Terminal & SSH setup guide - see `docs/terminal-ssh-setup.md`
@@ -78,13 +79,15 @@ setup/
 ├── README.md                   # Repo overview and quick start
 ├── CLAUDE.md                   # This file (project tracking)
 ├── docs/
-│   ├── getting-cluster-access.md  # One-time account setup
-│   ├── harvard-cluster.md         # Environment configuration
+│   ├── project-management.md      # Project management overview
+│   ├── create-accounts.md         # GitHub, FASRC, AWS account setup
+│   ├── laptop-macos.md            # macOS laptop setup guide
+│   ├── getting-cluster-access.md  # VPN, 2FA, SSH verification
+│   ├── harvard-cluster.md         # Cluster environment configuration
 │   ├── cluster-usage.md           # Day-to-day cluster usage
 │   ├── terminal-ssh-setup.md      # Advanced SSH configuration
 │   ├── compute-guidelines.md      # Lab policies and best practices
-│   ├── slurm-basics.md            # SLURM job submission
-│   └── laptop-macos.md            # macOS laptop setup guide
+│   └── slurm-basics.md            # SLURM job submission
 ├── scripts/
 │   ├── s3_bucket_mount.sh      # Mount S3 bucket via rclone FUSE
 │   ├── s3_bucket_unmount.sh    # Unmount S3 bucket

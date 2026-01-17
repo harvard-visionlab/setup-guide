@@ -1,34 +1,21 @@
 # Getting Cluster Access
 
-This guide walks you through the one-time setup to get access to the Harvard FASRC cluster.
+This guide walks you through setting up VPN, two-factor authentication, and verifying your cluster access.
+
+> **Prerequisite:** You must have an FASRC account. See [Create Your Accounts](create-accounts.md) first.
 
 ## Overview
 
 You'll need to:
 
-1. Get an FASRC account
-2. Set your password
-3. Enable two-factor authentication (2FA)
-4. Install VPN software
-5. Verify SSH access
-6. Submit your info to the lab
+1. Enable two-factor authentication (2FA)
+2. Install VPN software
+3. Verify SSH access
+4. Test interactive access (optional)
 
-## 1. Get an FASRC Account
+## 1. Enable Two-Factor Authentication
 
-Request an account using the FASRC account request tool:
-
-- **Direct link:** https://portal.rc.fas.harvard.edu/request/account/new
-- **Official quickstart guide:** https://docs.rc.fas.harvard.edu/kb/quickstart-guide/
-
-## 2. Set Your Password
-
-Set your FASRC password (this is separate from your Harvard password):
-
-https://portal.rc.fas.harvard.edu/p3/pwreset/
-
-## 3. Enable Two-Factor Authentication
-
-You can use the Duo Mobile app for 2FA:
+Set up Duo Mobile for 2FA:
 
 1. Open Duo Mobile on your phone
 2. Add a new service/account
@@ -38,7 +25,7 @@ You can use the Duo Mobile app for 2FA:
 
 > **Note:** The official instructions can be a bit circular. The key steps are: add a new service in Duo Mobile, then scan the QR code displayed on the FASRC website.
 
-## 4. Install VPN Software
+## 2. Install VPN Software
 
 You must be connected to the VPN to access the cluster.
 
@@ -66,7 +53,7 @@ You must be connected to the VPN to access the cluster.
 
 > **Troubleshooting:** If login fails, verify your credentials at https://portal.rc.fas.harvard.edu/
 
-## 5. Verify SSH Access
+## 3. Verify SSH Access
 
 With the VPN connected, verify you can SSH into the cluster.
 
@@ -88,7 +75,7 @@ Once logged in, confirm your username:
 echo $USER
 ```
 
-This should match your FASRC username. If it differs, note this username for the lab info form.
+This is your `VISLAB_USERNAME` and should match your FASRC username.
 
 ### Check Your SLURM Accounts
 
@@ -98,19 +85,9 @@ See which accounts you have access to:
 sacctmgr show assoc user=$USER format=account%30
 ```
 
-Save this output—you'll need it for the lab info form.
+You should see accounts like `kempner_alvarez_lab` or `kempner_konkle_lab`.
 
-## 6. Submit Your Info to the Lab
-
-Once you've verified access, fill out the lab information form with:
-
-- Your FASRC username (from `echo $USER`)
-- Your SLURM accounts (from `sacctmgr show assoc`)
-- Your GitHub username (create an account at github.com if needed)
-
-Submit this information to George.
-
-## 7. Test Interactive Access (Optional)
+## 4. Test Interactive Access (Optional)
 
 Verify you can launch an interactive session:
 
