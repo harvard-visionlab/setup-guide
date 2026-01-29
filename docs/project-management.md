@@ -2,6 +2,48 @@
 
 This guide provides an overview of the project and compute ecosystem, focusing on the core components of our workflows and the reasoning behind them.
 
+
+
+## Scenarios: Check Your Vulnerabilities
+
+For your projects right now, ask yourself these questions:
+
+### Hardware Failure
+
+**Your laptop hard drive fails tomorrow. How bad is it?**
+
+- Can you recover your code? (It should all be pushed to GitHub)
+- Can you recover your data and outputs? (They should all be in S3)
+- Can you recover your documents? (They should all be in Dropbox)
+
+If the answer to any of these is "no" or "I'd lose weeks of work," that's a vulnerability to fix.
+
+### System Outage
+
+**The cluster is down and inaccessible - you can't even log in to retrieve files. You have a deadline in a week. Can you still make it?**
+
+- Is your code somewhere other than the cluster? (GitHub)
+- Are your outputs somewhere other than the cluster? (S3)
+- Can you run your analyses on Lightning or a lab workstation instead?
+
+If you're blocked because everything lives on one system, that's a vulnerability.
+
+### Sharing
+
+**A collaborator is excited about using your stimuli or analysis. How easy is it to share with them?**
+
+- Can you send them a GitHub link to clone?
+- Can they access the data in S3?
+- Is there documentation so they know how to run things?
+- Will the code work on their system, or is it hardcoded to your paths?
+
+If sharing requires you to manually copy files, rewrite paths, or spend hours explaining how things work, that's friction that slows science down.
+
+---
+
+The workflows and components in this guide are designed to give you good answers to all of these questions.
+
+
 ## Philosophy: Stability Through Agility
 
 The goal of a neuro-AI project and compute ecosystem is to be both **stable/backed up** and **flexible/portable** between systems. We call this "stability through agility."
@@ -85,42 +127,3 @@ For other project documents, automatically backed up and shared among co-authors
 - Manuscripts
 
 **Note:** Dropbox is for documents, not code or data. Code goes in GitHub, data/outputs go in S3.
-
-## Scenarios: Check Your Vulnerabilities
-
-For your projects right now, ask yourself these questions:
-
-### Hardware Failure
-
-**Your laptop hard drive fails tomorrow. How bad is it?**
-
-- Can you recover your code? (It should all be pushed to GitHub)
-- Can you recover your data and outputs? (They should all be in S3)
-- Can you recover your documents? (They should all be in Dropbox)
-
-If the answer to any of these is "no" or "I'd lose weeks of work," that's a vulnerability to fix.
-
-### System Outage
-
-**The cluster is down and inaccessible - you can't even log in to retrieve files. You have a deadline in a week. Can you still make it?**
-
-- Is your code somewhere other than the cluster? (GitHub)
-- Are your outputs somewhere other than the cluster? (S3)
-- Can you run your analyses on Lightning or a lab workstation instead?
-
-If you're blocked because everything lives on one system, that's a vulnerability.
-
-### Sharing
-
-**A collaborator is excited about using your stimuli or analysis. How easy is it to share with them?**
-
-- Can you send them a GitHub link to clone?
-- Can they access the data in S3?
-- Is there documentation so they know how to run things?
-- Will the code work on their system, or is it hardcoded to your paths?
-
-If sharing requires you to manually copy files, rewrite paths, or spend hours explaining how things work, that's friction that slows science down.
-
----
-
-The workflows and components in this guide are designed to give you good answers to all of these questions.
