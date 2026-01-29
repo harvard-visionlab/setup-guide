@@ -78,7 +78,7 @@ All data and outputs live in S3 buckets.
 
 ### 3. Python Scripts for Analyses
 
-Use `.py` scripts for running analyses and saving outputs.
+Use `.py` scripts for running analyses and saving outputs (not notebooks)
 
 **Why:**
 - Reproducible - anyone can run the same script and get the same results
