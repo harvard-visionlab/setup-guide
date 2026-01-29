@@ -59,6 +59,7 @@ The components of this system (and the workflows) are designed with these goals 
 All code lives in GitHub repositories.
 
 **Why:**
+- Inherently portable. Git pull code to any system
 - Version control tracks changes and enables collaboration
 - Pre-cursor step for publicly available repos with publications
 - Clarity and transparency in how analyses were done
