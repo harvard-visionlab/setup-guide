@@ -64,7 +64,17 @@ All code lives in GitHub repositories.
 - Clarity and transparency in how analyses were done
 - Open source by default
 
-### 2. Python Scripts for Analyses
+### 2. S3 for Data and Outputs
+
+All data and outputs live in S3 buckets.
+
+**Why:**
+- **Backed up** - AWS 99.99% durability
+- **Accessible** - from any compute environment
+- **Portable** - not tied to any single machine
+- **Cost effective** - cheaper than cluster storage for large datasets
+
+### 3. Python Scripts for Analyses
 
 Use `.py` scripts for running analyses and saving outputs.
 
@@ -80,16 +90,6 @@ Use `.py` scripts for running analyses and saving outputs.
 - Notebooks don't work well with GitHub (messy diffs, merge conflicts)
 - Hidden state can make results non-reproducible
 - Hard to run programmatically or in batch jobs
-
-### 3. S3 for Data and Outputs
-
-All data and outputs live in S3 buckets.
-
-**Why:**
-- **Backed up** - AWS 99.99% durability
-- **Accessible** - from any compute environment
-- **Portable** - not tied to any single machine
-- **Cost effective** - cheaper than cluster storage for large datasets
 
 ## Available Compute Environments
 
