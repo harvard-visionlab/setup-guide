@@ -74,6 +74,7 @@ All data and outputs live in S3 buckets.
 - **Accessible** - from any compute environment
 - **Portable** - not tied to any single machine
 - **Cost effective** - cheaper than cluster storage for large datasets
+- **Sharable** - vision lab S3 bucket allows for sharing datasets, work products, etc
 
 ### 3. Python Scripts for Analyses
 
