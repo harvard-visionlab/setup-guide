@@ -28,6 +28,6 @@ Setup guides for Vision Lab members to configure their computing environments.
 | Task                       | Guide                                                                                       | Status  |
 | -------------------------- | ------------------------------------------------------------------------------------------- | ------- |
 | Visionlab Project Template | [harvard-visionlab/project-template](https://github.com/harvard-visionlab/project-template) | Draft   |
-| Project Demo               | [harvard-visionlab/project-demo](https://github.com/harvard-visionlab/project-demo)         | Draft   |
+| Project Demo               | [harvard-visionlab/project-demo](https://github.com/harvard-visionlab/project-demo)         | in progress   |
 | Launching SLURM JOBS       | docs/slurm.md                                                                               | Planned |
 | Model Training             | docs/model-training.md                                                                      | Planned |
