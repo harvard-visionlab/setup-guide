@@ -502,6 +502,7 @@ chmod +x s3_bucket_mount.sh s3_bucket_unmount.sh s3_zombie_sweep.sh
 ```bash
 cd $BUCKET_DIR
 ./s3_bucket_mount.sh . visionlab-members
+./s3_bucket_mount.sh . visionlab-datasets
 ```
 
 ### 6. Access via Finder
