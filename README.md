@@ -21,7 +21,7 @@ Setup guides for Vision Lab members to configure their computing environments.
 | Task                 | Guide                                                    | Status  |
 | -------------------- | -------------------------------------------------------- | ------- |
 | Terminal & SSH Setup | [docs/terminal-ssh-setup.md](docs/terminal-ssh-setup.md) | Draft   |
-| Using the Cluster    | docs/cluster-usage.md                                    | Planned |
+| VS Code Setup        | [docs/vs-code.md](docs/vs-code.md)                       | Planned |
 
 ## Project Management, Project Templates, and Workflows
 
@@ -29,5 +29,6 @@ Setup guides for Vision Lab members to configure their computing environments.
 | -------------------------- | ------------------------------------------------------------------------------------------- | ------- |
 | Visionlab Project Template | [harvard-visionlab/project-template](https://github.com/harvard-visionlab/project-template) | Draft   |
 | Project Demo               | [harvard-visionlab/project-demo](https://github.com/harvard-visionlab/project-demo)         | in progress   |
+| Using the Cluster          | docs/cluster-usage.md                                                                       | Planned |
 | Launching SLURM JOBS       | docs/slurm.md                                                                               | Planned |
 | Model Training             | docs/model-training.md                                                                      | Planned |
