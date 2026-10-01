@@ -6,20 +6,9 @@
 # Set to your primary advisor's lab: alvarez_lab or konkle_lab
 export LAB=alvarez_lab
 
-# Storage roots
-export MY_WORK_DIR=/n/holylabs/LABS/${LAB}/Users/$USER
-export MY_NETSCRATCH=/n/netscratch/${LAB}/Everyone/$USER
-export TIER1=/n/alvarez_lab_tier1/Lab/
-
-# Holylabs folder structure
-export PROJECT_DIR=${MY_WORK_DIR}/Projects    # Git repos go here
-export BUCKET_DIR=${MY_WORK_DIR}/Buckets      # S3 bucket mounts
-export SANDBOX_DIR=${MY_WORK_DIR}/Sandbox     # Testing/scratch
-
-# uv (Python package manager) configuration
-# Cache on holylabs enables hardlinks for fast installs
-export UV_CACHE_DIR=${MY_WORK_DIR}/.uv_cache
-export UV_TOOL_DIR=${MY_WORK_DIR}/.uv_tools
+# Lab environment: storage paths (MY_WORK_DIR, LAB_SCRATCH, LAB_STORAGE, PROJECT_DIR, ...), uv cache and
+# venv location, TURBOJPEG_ROOT. Shared by the whole lab; source: setup-guide scripts/cluster/lab_env.sh
+[ -f /n/holylabs/LABS/${LAB}/Lab/setup/lab_env.sh ] && . /n/holylabs/LABS/${LAB}/Lab/setup/lab_env.sh
 
 # AWS configuration
 # Ask George to send you your credentials; keep these secret always, never commit to any public repo.
@@ -27,12 +16,12 @@ export UV_TOOL_DIR=${MY_WORK_DIR}/.uv_tools
 # and could bork the entire lab infrastructure.
 export AWS_ACCESS_KEY_ID=
 export AWS_SECRET_ACCESS_KEY=
-export AWS_REGION=us-east-1
+export AWS_DEFAULT_REGION=us-east-1
 
 # Convenience aliases (optional - uncomment if desired)
 # alias cdw='cd $MY_WORK_DIR'
-# alias cdn='cd $MY_NETSCRATCH'
-# alias cdt='cd $TIER1'
+# alias cdn='cd $LAB_SCRATCH'
+# alias cdl='cd $LAB_STORAGE'
 # alias cdp='cd $PROJECT_DIR'
 # alias cdb='cd $BUCKET_DIR'
 # alias cds='cd $SANDBOX_DIR'

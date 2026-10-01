@@ -67,9 +67,7 @@ if [ -f /etc/bashrc ]; then . /etc/bashrc; fi
 
 # 2. Lab Storage Paths (Fast)
 export LAB=alvarez_lab
-export MY_WORK_DIR=/n/holylabs/LABS/${LAB}/Users/$USER
-export PROJECT_DIR=${MY_WORK_DIR}/Projects
-export UV_CACHE_DIR=${MY_WORK_DIR}/.uv_cache
+. /n/holylabs/LABS/${LAB}/Lab/setup/lab_env.sh   # storage paths, uv cache (fast: only exports)
 
 # 3. Secure Credential Handling
 # DO NOT 'export WANDB_API_KEY' here.

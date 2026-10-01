@@ -56,7 +56,7 @@ salloc -p gpu_test -t 1:00:00 --mem=16G --gres=gpu:1
 srun -p gpu_test -t 1:00:00 --mem=16G --gres=gpu:1 --pty bash
 ```
 
-**Tip:** Use `gpu_test` or `test` partitions for quick debugging (max 1 hour). They have higher priority for short jobs.
+**Tip:** Use `gpu_test` or `test` partitions for quick debugging (12 hours max). They have higher priority for short jobs.
 
 ## Basic Job Script
 
@@ -78,6 +78,10 @@ Create a file called `job.sh`:
 # Create logs directory if it doesn't exist
 mkdir -p logs
 
+# Jobs don't reliably read ~/.bashrc: load the lab environment explicitly
+export LAB=alvarez_lab   # or konkle_lab
+. /n/holylabs/LABS/${LAB}/Lab/setup/lab_env.sh
+
 # Load any needed modules (if required)
 # module load cuda/12.2
 
@@ -88,6 +92,9 @@ echo "Start time: $(date)"
 
 # Go to project directory
 cd $PROJECT_DIR/my-project
+
+# Rebuild the environment if the netscratch purge removed files (quick no-op otherwise)
+uv sync --frozen
 
 # Run your code
 uv run python train.py
@@ -107,11 +114,17 @@ sbatch job.sh
 | ---------------- | ---------- | ---------- | ---------------------------------------------------------- |
 | `gpu`            | A100, V100 | 7 days     | Standard GPU partition                                     |
 | `gpu_requeue`    | A100, V100 | 7 days     | Lower priority, preemptible, **use for checkpointed jobs** |
-| `gpu_test`       | A100, V100 | 1 hour     | Testing/debugging, high priority                           |
-| `test`           | None       | 1 hour     | CPU-only testing                                           |
+| `gpu_test`       | MIG slices | 12 hours   | Testing/debugging, high priority                           |
+| `test`           | None       | 12 hours   | CPU-only testing                                           |
 | `serial_requeue` | None       | 7 days     | CPU jobs, preemptible                                      |
 
 **Recommendation:** Use `gpu_requeue` for training jobs that checkpoint regularly. You get better queue times and contribute to cluster efficiency.
+
+**Kempner partitions** (`kempner`, `kempner_h100`, `kempner_h200`, `kempner_rtx`; 2-day limit) need `--account=kempner_<lab>` (e.g. `kempner_alvarez_lab`). Check which accounts you have with `sacctmgr -nP show assoc user=$USER format=account`. Specs and rules: [Cluster Reference](cluster-reference.md#5-kempner-partitions-checked-2026-09-30).
+
+## Login Nodes vs Jobs
+
+The login node (where `ssh` lands you) is shared by everyone. Use it only for editing, git, submitting and checking jobs, and reading logs. Run everything else as a job (`test` or `shared` partitions start quickly): installing packages (`uv sync`), tests, copying or syncing data, `du`/`find` over big directories, benchmarks, training.
 
 ## Requesting GPUs
 
@@ -140,7 +153,10 @@ Run many similar jobs efficiently:
 #SBATCH --output=logs/%A_%a.out   # %A=array job ID, %a=task ID
 
 # Each job gets a different SLURM_ARRAY_TASK_ID
+export LAB=alvarez_lab; . /n/holylabs/LABS/${LAB}/Lab/setup/lab_env.sh
 cd $PROJECT_DIR/my-project
+# Don't `uv sync` here: 10 tasks syncing one environment at once can corrupt it.
+# Run `uv sync --frozen` once before submitting the array (in an interactive session or a prior job).
 uv run python train.py --seed=$SLURM_ARRAY_TASK_ID
 ```
 
@@ -184,7 +200,9 @@ mkdir -p logs
 
 echo "Starting job $SLURM_JOB_ID on $(hostname)"
 
+export LAB=alvarez_lab; . /n/holylabs/LABS/${LAB}/Lab/setup/lab_env.sh
 cd $PROJECT_DIR/my-project
+uv sync --frozen
 
 # Mount S3 bucket for saving checkpoints
 $BUCKET_DIR/s3_bucket_mount.sh $BUCKET_DIR visionlab-members

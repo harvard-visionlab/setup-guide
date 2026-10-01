@@ -22,6 +22,8 @@ Setup guides for Vision Lab members to configure their computing environments.
 | -------------------- | -------------------------------------------------------- | ------- |
 | Terminal & SSH Setup | [docs/terminal-ssh-setup.md](docs/terminal-ssh-setup.md) | Draft   |
 | VS Code Setup        | [docs/vs-code.md](docs/vs-code.md)                       | Planned |
+| Cluster Reference (storage, quotas, Kempner, `lab_env.sh`) | [docs/cluster-reference.md](docs/cluster-reference.md) | Draft |
+| Claude Code skill for the cluster | [skills/fasrc-cluster](skills/fasrc-cluster/SKILL.md) ([install](docs/cluster-reference.md#claude-code-skill)) | Draft |
 
 ## Project Management, Project Templates, and Workflows
 

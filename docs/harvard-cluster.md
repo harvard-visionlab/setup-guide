@@ -18,6 +18,7 @@ This guide covers setting up your computing environment on the Harvard FASRC clu
     -   [Verify Hardlinks Work](#4-verify-hardlinks-work)
     -   [Jupyter Setup](#5-jupyter-setup)
     -   [Clean Up Test Projects](#6-clean-up-test-projects)
+    -   [After the Netscratch Purge, and in Jobs](#7-after-the-netscratch-purge-and-in-jobs)
 -   [AWS and S3 Buckets](#aws-and-s3-buckets)
     -   [Install AWS CLI Tools](#1-install-aws-cli-tools)
     -   [Verify AWS Access](#2-verify-aws-access)
@@ -54,15 +55,17 @@ You'll run all the setup commands below in this terminal.
 
 The cluster has several storage tiers with different characteristics:
 
-| Storage    | Path                                   | Characteristics                                          | Use for                                       |
-| ---------- | -------------------------------------- | -------------------------------------------------------- | --------------------------------------------- |
-| Home       | `~/`                                   | Your home, mounted every job, 100GB limit, persistent    | Config files, symlinks                        |
-| Holylabs   | `/n/holylabs/LABS/${LAB}/Users/$USER/` | Less performant, inexpensive, persistent                 | Project repos (code), uv cache, not "outputs" |
-| Netscratch | `/n/netscratch/${LAB}/Everyone/$USER/` | Free, large, performant, **ephemeral** (monthly cleanup) | Temporary scratch, large intermediate files   |
-| Tier1      | `/n/alvarez_lab_tier1/Users/$USER/`    | Expensive, limited (~8TB), performant, persistent        | Use for big datasets, caches, not "outputs"   |
-| AWS        | cloud storage "s3 buckets"             | Affordable, very large, backed-up (aws 99.99%)           | All outputs (model weights, analysis results) |
+| Storage     | Path                                   | Characteristics                                                    | Use for                                            |
+| ----------- | -------------------------------------- | ------------------------------------------------------------------ | -------------------------------------------------- |
+| Home        | `~/`                                   | Your home, mounted every job, 100GB limit, persistent              | Config files, symlinks                             |
+| Holylabs    | `/n/holylabs/LABS/${LAB}/Users/$USER/` | Persistent, **lab-wide limit on number of files (~1M)**            | Project repos (code) only. No venvs, caches, envs  |
+| Netscratch  | `/n/netscratch/${LAB}/Lab/$USER/`      | Free, large, fast, **ephemeral** (files unused 90 days are purged) | Python venvs, uv cache, run dirs, temp files       |
+| Lab storage | `/n/lab_storage/${LAB}/Lab/`           | Persistent, ~8TB, slow (~50-100 MB/s)                              | Shared datasets, lab software                      |
+| AWS         | cloud storage "s3 buckets"             | Affordable, very large, backed-up (aws 99.99%)                     | All outputs (model weights, analysis results)      |
 
-**Warning:** Files on netscratch are automatically deleted during monthly cleanup. Never store anything there that you can't regenerate.
+**Warning:** Files on netscratch that haven't been used for 90 days are deleted automatically (and "touching" files to avoid this is against FASRC policy). Never store anything there that you can't regenerate. Python environments are fine: uv rebuilds them exactly from `uv.lock`.
+
+**Why venvs don't go on holylabs:** holylabs limits the *number of files* the whole lab can own (~1M, and FASRC won't raise it). A single Python environment is 25-60k files, so a dozen of them fill the lab's quota and everyone's writes start failing with `Disk quota exceeded`. Details: [Cluster Reference](cluster-reference.md).
 
 ## Initial Setup
 
@@ -85,21 +88,8 @@ Add these lines at the end:
 # Set to your primary advisor's lab: alvarez_lab or konkle_lab
 export LAB=alvarez_lab
 
-# Storage roots
-export MY_WORK_DIR=/n/holylabs/LABS/${LAB}/Users/$USER
-export MY_NETSCRATCH=/n/netscratch/${LAB}/Everyone/$USER
-export LAB_NETSCRATCH=/n/netscratch/${LAB}/Everyone
-export LAB_TIER1=/n/alvarez_lab_tier1/Lab/
-
-# Holylabs folder structure
-export PROJECT_DIR=${MY_WORK_DIR}/Projects    # Git repos go here
-export BUCKET_DIR=${MY_WORK_DIR}/Buckets      # S3 bucket mounts
-export SANDBOX_DIR=${MY_WORK_DIR}/Sandbox     # Testing/scratch
-
-# uv (Python package manager) configuration
-# Cache on holylabs enables hardlinks for fast installs
-export UV_CACHE_DIR=${MY_WORK_DIR}/.uv_cache
-export UV_TOOL_DIR=${MY_WORK_DIR}/.uv_tools
+# Lab environment: storage paths, uv cache, uv venv location (shared by the whole lab, maintained in setup-guide)
+[ -f /n/holylabs/LABS/${LAB}/Lab/setup/lab_env.sh ] && . /n/holylabs/LABS/${LAB}/Lab/setup/lab_env.sh
 
 # AWS configuration
 # ask George to send you your credentials; keep these secret always, never commit these to any public repo
@@ -127,23 +117,27 @@ Reload your shell configuration:
 source ~/.bashrc
 ```
 
-**What each variable does:**
+**What each variable does** (all but `LAB` and the AWS ones come from `lab_env.sh`; see [scripts/cluster/lab_env.sh](../scripts/cluster/lab_env.sh)):
 
 | Variable                | Purpose                                              |
 | ----------------------- | ---------------------------------------------------- |
 | `LAB`                   | Your lab affiliation, used in storage paths          |
 | `MY_WORK_DIR`           | Your holylabs directory working directory            |
-| `MY_NETSCRATCH`         | Your netscratch directory (temp files, ephemeral)    |
+| `LAB_SCRATCH`           | Your netscratch directory (venvs, caches, temp; 90-day purge) |
+| `MY_NETSCRATCH`         | Same as `LAB_SCRATCH` (older name)                   |
 | `LAB_NETSCRATCH`        | Shared lab netscratch (for shared caches like litdata) |
-| `LAB_TIER1`             | Lab tier1 directory (large datasets, persistent)     |
+| `LAB_STORAGE`           | Lab storage (shared datasets, lab software; persistent, slow) |
 | `PROJECT_DIR`           | Where your git repos live                            |
 | `BUCKET_DIR`            | Where S3 buckets are mounted                         |
 | `SANDBOX_DIR`           | For testing and scratch work                         |
-| `UV_CACHE_DIR`          | Your uv package cache (holylabs, enables hardlinks)  |
+| `UV_CACHE_DIR`          | Your uv package cache (netscratch, next to your venvs) |
+| `TURBOJPEG_ROOT`        | Lab libjpeg-turbo build (needed to install slipstream) |
 | `UV_TOOL_DIR`           | Your uv tools directory (CLI tools like s5cmd)       |
 | `AWS_ACCESS_KEY_ID`     | Your AWS access key (get from George)                |
 | `AWS_SECRET_ACCESS_KEY` | Your AWS secret key (get from George)                |
 | `AWS_DEFAULT_REGION`    | AWS region (us-east-1)                               |
+
+`lab_env.sh` also wraps the `uv` command: inside a git repo on holylabs, the project's virtual environment goes to `$LAB_SCRATCH/venvs/<repo name>` instead of `<repo>/.venv`. Run `lab_venv` inside a repo to print where its environment is.
 
 ### 2. Verify Storage Access
 
@@ -157,8 +151,8 @@ ls -la $MY_WORK_DIR/ && echo "✅ Holylabs access OK" || echo "🚫 No holylabs 
 # Check netscratch access (may need to create your directory)
 ls -la $MY_NETSCRATCH/ 2>/dev/null && echo "✅ Netscratch access OK" || echo "🚫 Netscratch directory doesn't exist yet"
 
-# Check tier1 access
-ls -la $LAB_TIER1/ && echo "Tier1 access OK" || echo "🚫 No tier1 access"
+# Check lab storage access
+ls -la $LAB_STORAGE/ && echo "✅ Lab storage access OK" || echo "🚫 No lab storage access"
 
 # Check home directory usage (could take a couple of minutes)
 echo "Home: $(du -sh ~ 2>/dev/null | cut -f1) used of 100GB"
@@ -171,7 +165,7 @@ If your netscratch user directory doesn't exist, create it:
 mkdir -p $MY_NETSCRATCH
 ```
 
-If you don't have access to tier1 or holylabs, contact the lab administrator.
+If you don't have access to lab storage or holylabs, contact the lab administrator.
 
 ### 3. Create Holylabs Folder Structure
 
@@ -207,7 +201,7 @@ e.g.
 
 ### 4. Set Up Home Directory Symlinks
 
-Your home directory has a 100GB quota. Many applications create large hidden cache directories that can quickly fill this up. We symlink these to netscratch (ephemeral caches) or tier1 (persistent environments).
+Your home directory has a 100GB quota. Many applications create large hidden cache directories that can quickly fill this up. We symlink these to netscratch.
 
 First, create your netscratch user directory if it doesn't exist:
 
@@ -228,13 +222,11 @@ mkdir -p $MY_NETSCRATCH/.cache
 ln -s $MY_NETSCRATCH/.cache ~/.cache
 ```
 
-#### ~/.conda → tier1 (if using conda)
+#### ~/.conda → netscratch (if using conda)
 
 **Important:** Conda environments have hardcoded paths and **cannot be moved**. If you try to move them, they will break. You must delete and rebuild.
 
-If you're new to the cluster, we recommend using **uv** instead of conda - it's faster, more reproducible, and doesn't have this problem.
-
-If you're an existing conda user and want to set up the symlink:
+The lab uses **uv**, not conda - it's faster, more reproducible, and doesn't have this problem. Conda environments must **not** live on holylabs (they eat the lab's file quota). If you still need conda, keep environments on netscratch and keep an exported `.yml` in your repo so you can rebuild after the 90-day purge:
 
 ```bash
 # Check what conda environments you have
@@ -246,9 +238,9 @@ conda env list
 # Remove conda directory (this deletes all environments!)
 rm -rf ~/.conda
 
-# Create symlink to tier1
-mkdir -p /n/alvarez_lab_tier1/Users/$USER/.conda
-ln -s /n/alvarez_lab_tier1/Users/$USER/.conda ~/.conda
+# Create symlink to netscratch
+mkdir -p $LAB_SCRATCH/.conda
+ln -s $LAB_SCRATCH/.conda ~/.conda
 
 # Recreate environments from exported files:
 # conda env create -f myenv.yml
@@ -281,7 +273,7 @@ You should see arrows (`->`) pointing to the target locations.
 
 #### What about ~/.nv and ~/.triton?
 
-These CUDA/Triton compiler caches are small (typically < 1 GB combined) but expensive to rebuild. We recommend **keeping them in home** rather than symlinking to netscratch. The monthly cleanup would force recompilation, which can add minutes to your first job after cleanup. The home quota savings aren't worth the annoyance.
+These CUDA/Triton compiler caches are small (typically < 1 GB combined) but expensive to rebuild. We recommend **keeping them in home** rather than symlinking to netscratch. The netscratch purge would force recompilation, which can add minutes to your first job after cleanup. The home quota savings aren't worth the annoyance.
 
 ## Python Environment Setup with uv
 
@@ -307,13 +299,15 @@ If you ran the bashrc setup above, `UV_CACHE_DIR` is already configured. Verify:
 
 ```bash
 echo $UV_CACHE_DIR
-# Should show: /n/holylabs/LABS/<your-lab>/Users/<your-username>/.uv_cache
+# Should show: /n/netscratch/<your-lab>/Lab/<your-username>/uv-cache
 ```
 
-**Why holylabs?** The uv cache and your project virtual environments will both live on holylabs. This allows uv to use hardlinks instead of copying files, which means:
+**Why netscratch?** The uv cache and your project virtual environments (`$LAB_SCRATCH/venvs/<repo>`) both live on netscratch, the same filesystem. This allows uv to use hardlinks instead of copying files, which means:
 
 -   Near-instant package installation after the first download
--   Multiple projects sharing the same packages use almost no extra disk space
+-   Multiple projects sharing the same packages use almost no extra disk space or files
+
+Your code stays on holylabs; only the environments are on netscratch, which keeps the lab under its holylabs file quota.
 
 ### 3. Create a Test Project
 
@@ -324,6 +318,8 @@ cd $SANDBOX_DIR
 mkdir test-project && cd test-project
 uv init
 ```
+
+`uv init` also makes the folder a git repo; that is what tells `lab_env.sh` to put its environment on netscratch. (For a folder that isn't a git repo, run `git init` first.)
 
 Now add some packages:
 
@@ -337,7 +333,12 @@ The project will contain:
 
 -   `pyproject.toml` — project metadata and dependencies
 -   `uv.lock` — exact versions for reproducibility
--   `.venv/` — the virtual environment
+
+The virtual environment is **not** in the project folder: `lab_env.sh` puts it at `$LAB_SCRATCH/venvs/test-project`. Check with:
+
+```bash
+lab_venv
+```
 
 ### 4. Verify Hardlinks Work
 
@@ -355,14 +356,14 @@ This should be much faster because uv hardlinks from the cache instead of re-dow
 Verify hardlinks are working by comparing disk usage:
 
 ```bash
-du -h --max-depth=1 $SANDBOX_DIR/test-project*
+du -sh $LAB_SCRATCH/venvs/test-project*
 ```
 
 You should see something like:
 
 ```
-6.6G    test-project
-1.8M    test-project-2
+6.6G    /n/netscratch/alvarez_lab/Lab/you/venvs/test-project
+1.8M    /n/netscratch/alvarez_lab/Lab/you/venvs/test-project-2
 ```
 
 The second project uses almost no additional disk space because packages are hardlinked from the cache. The ~2MB is just metadata (venv config, script wrappers, etc.).
@@ -412,15 +413,32 @@ uv add ipykernel
 1. Open a notebook in Jupyter (e.g., via Open OnDemand)
 2. Navigate to or create a notebook inside your project directory
 3. Select "Python (uv auto)" as the kernel
-4. The kernel will automatically use the project's `.venv`
+4. The kernel will automatically use the project's environment
 
-**How it works:** The kernel runs `uv run`, which searches upward from the notebook's location to find a `pyproject.toml`. It then activates that project's environment.
+**How it works:** The kernel runs `uv run`, which searches upward from the notebook's location to find a `pyproject.toml`. It then activates that project's environment (`lab_env.sh` points it at `$LAB_SCRATCH/venvs/<repo>`).
 
 ### 6. Clean Up Test Projects
 
 ```bash
 rm -rf $SANDBOX_DIR/test-project $SANDBOX_DIR/test-project-2
+rm -rf $LAB_SCRATCH/venvs/test-project $LAB_SCRATCH/venvs/test-project-2
 ```
+
+### 7. After the Netscratch Purge, and in Jobs
+
+If you don't use a project for ~90 days, netscratch may delete files from its environment. Rebuild it exactly from the lockfile:
+
+```bash
+cd $PROJECT_DIR/my-project
+uv sync --frozen
+```
+
+Job scripts should do the same before running anything (it's a quick no-op when nothing is missing). See [SLURM Basics](slurm-basics.md).
+
+Two cautions:
+
+-   Install packages (`uv sync`, `uv add`) inside a job or interactive session, **not on a login node**: login nodes are shared, and `uv` can hang there waiting on a file lock.
+-   Don't run two `uv sync`s at once against the same environment or cache (e.g. two jobs starting together): on network filesystems this can corrupt the install. Sync once, then launch.
 
 ---
 
@@ -531,7 +549,7 @@ uv add fsspec s3fs pandas pyarrow torch ipykernel
 1. In JupyterLab, navigate to your `s3-test` directory (`$SANDBOX_DIR/s3-test`)
 2. Click **File → New → Notebook**
 3. Select **Python (uv auto)** as the kernel
-4. The kernel will automatically use the project's `.venv` with all the packages you just installed
+4. The kernel will automatically use the project's environment with all the packages you just installed
 
 #### Basic fsspec usage
 
@@ -826,13 +844,14 @@ For new code, prefer **fsspec** (section 4) - it's simpler and doesn't require m
 ```bash
 $LAB                    # Your lab: alvarez_lab or konkle_lab
 $MY_WORK_DIR            # /n/holylabs/LABS/${LAB}/Users/$USER
-$MY_NETSCRATCH          # /n/netscratch/${LAB}/Everyone/$USER
+$LAB_SCRATCH            # /n/netscratch/${LAB}/Lab/$USER (venvs, caches; 90-day purge)
+$MY_NETSCRATCH          # same as $LAB_SCRATCH
 $LAB_NETSCRATCH         # /n/netscratch/${LAB}/Everyone (shared)
-$LAB_TIER1              # /n/alvarez_lab_tier1/Lab/
+$LAB_STORAGE            # /n/lab_storage/${LAB}/Lab
 $PROJECT_DIR            # ${MY_WORK_DIR}/Projects
 $BUCKET_DIR             # ${MY_WORK_DIR}/Buckets
 $SANDBOX_DIR            # ${MY_WORK_DIR}/Sandbox
-$UV_CACHE_DIR           # ${MY_WORK_DIR}/.uv_cache
+$UV_CACHE_DIR           # ${LAB_SCRATCH}/uv-cache
 $UV_TOOL_DIR            # ${MY_WORK_DIR}/.uv_tools
 $AWS_ACCESS_KEY_ID      # Your AWS access key (keep secret!)
 $AWS_SECRET_ACCESS_KEY  # Your AWS secret key (keep secret!)
@@ -847,7 +866,7 @@ Summary of symlinks set up in [Initial Setup](#4-set-up-home-directory-symlinks)
 | -------------- | ------------------------------ | ----------------------------------------- |
 | `~/.cache`     | `$MY_NETSCRATCH/.cache`        | App caches (pip, huggingface, torch)      |
 | `~/.lightning` | `$LAB_NETSCRATCH/.lightning`   | StreamingDataset chunks (shared by lab)   |
-| `~/.conda`     | Tier1 `/Users/$USER/.conda`    | Conda environments (if using conda)       |
+| `~/.conda`     | `$LAB_SCRATCH/.conda`          | Conda environments (if using conda)       |
 
 Kept in home: `~/.ssh`, `~/.config`, `~/.bashrc`, `~/.jupyter`, `~/.nv`, `~/.triton` (small or critical)
 
@@ -859,6 +878,8 @@ uv add <package>           # Add a dependency
 uv add <package>==1.2.3    # Add a specific version
 uv remove <package>        # Remove a dependency
 uv sync                    # Install all dependencies from lockfile
+uv sync --frozen           # Same, never changes uv.lock (use in jobs / after purge)
+lab_venv                   # Print where this repo's environment lives
 uv run <command>           # Run a command in the environment
 uv lock                    # Update the lockfile
 uv cache prune             # Clean up old cached packages
@@ -873,7 +894,7 @@ When sharing a project (e.g., via git), include:
 
 Do **not** include:
 
--   `.venv/` (add to `.gitignore`)
+-   `.venv/` (add to `.gitignore`; on the cluster it lives on netscratch anyway)
 
 Others can recreate your exact environment with:
 
@@ -940,14 +961,15 @@ You've now configured your Harvard cluster environment. Here's what you set up:
 **Storage architecture:**
 
 -   **Home directory (`~/`)** - Your small login node home (100GB limit). We set up symlinks so large caches don't fill it up.
--   **Holylabs (`$MY_WORK_DIR`)** - Your working directory for code and projects. This is where your git repos and uv environments live.
--   **Netscratch (`$MY_NETSCRATCH`)** - Fast, ephemeral storage for temporary files and caches. Cleaned monthly - don't store anything irreplaceable here.
+-   **Holylabs (`$MY_WORK_DIR`)** - Your working directory for code and projects. Your git repos live here; nothing with lots of files (environments, caches).
+-   **Netscratch (`$LAB_SCRATCH`)** - Fast, ephemeral storage for uv environments, caches and temporary files. Files unused for 90 days are purged - don't store anything irreplaceable here.
+-   **Lab storage (`$LAB_STORAGE`)** - Persistent, slower storage for shared datasets and lab software.
 -   **S3 buckets** - Cloud storage for all outputs (model weights, results, figures). Accessible from anywhere, backed up, and easy to share.
 
 **Environment management:**
 
 -   **uv** is your Python environment manager (not conda). It's fast, creates reproducible lockfiles, and uses hardlinks for efficient disk usage.
--   Each project gets its own `.venv` with dependencies tracked in `pyproject.toml` and `uv.lock`.
+-   Each project gets its own environment (on netscratch, at `$LAB_SCRATCH/venvs/<repo>`) with dependencies tracked in `pyproject.toml` and `uv.lock`.
 
 **Workflow:**
 
