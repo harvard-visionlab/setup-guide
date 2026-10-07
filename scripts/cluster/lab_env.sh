@@ -55,3 +55,14 @@ lab_venv() {
 if [ -d "$LAB_STORAGE/sw/libjpeg-turbo-3.0.4" ]; then
   export TURBOJPEG_ROOT="$LAB_STORAGE/sw/libjpeg-turbo-3.0.4"
 fi
+
+# Lab-wide FFmpeg (shared libs, libx264/libx265, NVDEC) for torchcodec and video encoding. torchcodec dlopens
+# libavutil.so.N etc. by soname, hence LD_LIBRARY_PATH. Built by scripts/cluster/build_ffmpeg.sh; never move it.
+if [ -d "$LAB_STORAGE/sw/ffmpeg-7.1.3" ]; then
+  export FFMPEG_ROOT="$LAB_STORAGE/sw/ffmpeg-7.1.3"
+  case ":$PATH:" in *":$FFMPEG_ROOT/bin:"*) ;; *) export PATH="$FFMPEG_ROOT/bin:$PATH" ;; esac
+  case ":${LD_LIBRARY_PATH:-}:" in
+    *":$FFMPEG_ROOT/lib:"*) ;;
+    *) export LD_LIBRARY_PATH="$FFMPEG_ROOT/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" ;;
+  esac
+fi

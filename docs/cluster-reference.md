@@ -9,6 +9,7 @@ This repo is the source of truth for:
 |---|---|
 | [`scripts/cluster/lab_env.sh`](../scripts/cluster/lab_env.sh) | `/n/holylabs/LABS/<lab>/Lab/setup/lab_env.sh` |
 | [`scripts/cluster/build_libjpeg_turbo.sh`](../scripts/cluster/build_libjpeg_turbo.sh) | sbatch script; builds `/n/lab_storage/<lab>/Lab/sw/libjpeg-turbo-<ver>` |
+| [`scripts/cluster/build_ffmpeg.sh`](../scripts/cluster/build_ffmpeg.sh) | sbatch script; builds `/n/lab_storage/<lab>/Lab/sw/ffmpeg-<ver>` |
 | [`skills/fasrc-cluster/SKILL.md`](../skills/fasrc-cluster/SKILL.md) | Claude Code skill (see [below](#claude-code-skill)) |
 
 ## 1. Where things live
@@ -109,6 +110,17 @@ Gotcha: slipstream builds its decoder inside its source tree, and uv caches git 
 Check with `ldd <venv>/lib/python3.*/site-packages/libslipstream/_libslipstream*.so | grep turbojpeg`; fix by
 deleting that checkout dir. The decoder's rpath lists `~/.local/lib{,64}` before the lab prefix: a stray
 libturbojpeg there would win.
+
+## 4b. FFmpeg (torchcodec, video encoding)
+
+FASRC has no FFmpeg libraries (no `libavcodec` in `ldconfig -p`, no module), and torchcodec (slipstream's
+`DecodeVideoWindow`) fails at the first decode without them. `scripts/cluster/build_ffmpeg.sh` builds FFmpeg 7.1.3
+(shared, GPL) with 8-bit libx264 and libx265 3.6 and NVDEC/CUVID into `/n/lab_storage/<lab>/Lab/sw/ffmpeg-<ver>`,
+rpath-linked to the prefix (never move it). It uses the system gcc, so no module is needed at runtime. It runs
+checks in the job (encoders and decoders present, x264/x265 test encodes, and a torchcodec decode if a venv is
+available) and removes the prefix if the build or an FFmpeg check fails. When the prefix exists, `lab_env.sh` sets
+`FFMPEG_ROOT`, adds `bin` to `PATH` and `lib` to `LD_LIBRARY_PATH` (torchcodec loads the libraries by soname).
+CPU AV1 decoding would need dav1d, which isn't built.
 
 ## 5. Kempner partitions (checked 2026-09-30)
 
