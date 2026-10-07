@@ -35,8 +35,7 @@ We are building a comprehensive setup guide covering multiple environments (Harv
 #### Harvard Cluster Setup
 - [ ] Module loading (if needed)
 - [ ] Add screenshots to cluster-usage.md (user must extract from PDFs)
-- [ ] Konkle lab: nothing built in konkle_lab space without Konkle's OK; questions in `docs/konkle-lab-notes.md`
-      (lab_env.sh already deployed there 2026-10-07: keep or remove per her answer)
+- [ ] Konkle lab: nothing built or deployed in konkle_lab space without Konkle's OK; questions in `docs/konkle-lab-notes.md`
 - [ ] Test NVDEC decode with the lab FFmpeg on a GPU node
 
 #### Other Environments

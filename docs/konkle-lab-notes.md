@@ -4,12 +4,11 @@ The cluster setup ([cluster reference](cluster-reference.md)) was built and test
 built in `konkle_lab` storage until Konkle has agreed to it. This page lists what is known, what has been done, and
 what to ask her.
 
-## Already in Konkle lab space
+## Konkle lab space: nothing of ours there
 
-- **2026-10-07: `lab_env.sh` deployed to `/n/holylabs/LABS/konkle_lab/Lab/setup/lab_env.sh`** (the deploy loop in
-  cluster-reference §2 covered both labs). This created `Lab/setup/` (`drwxr-sr-x`, owner alvarez, group konkle_lab).
-  No one sources it yet, and it was tested only by sourcing it (`LAB=konkle_lab`). **Keep it or remove it, depending
-  on what Konkle says.** Until then the deploy loop is alvarez_lab only.
+On 2026-10-07 `lab_env.sh` was briefly deployed to `/n/holylabs/LABS/konkle_lab/Lab/setup/` (the deploy loop covered
+both labs). It was removed, along with the `setup/` dir, the same day, before anyone sourced it. The deploy loop in
+cluster-reference §2 is alvarez_lab only until Konkle agrees.
 
 ## Facts (2026-10-07)
 
@@ -23,8 +22,8 @@ what to ask her.
 
 ## Questions for Konkle
 
-1. **Shared `lab_env.sh`:** OK to keep a lab-wide shell setup in `/n/holylabs/LABS/konkle_lab/Lab/setup/`, maintained
-   from this repo? Who in her lab should be able to edit or redeploy it (the dir is writable only by George now)?
+1. **Shared `lab_env.sh`:** OK to deploy a lab-wide shell setup to `/n/holylabs/LABS/konkle_lab/Lab/setup/`, maintained
+   from this repo? Who in her lab should be able to edit or redeploy it?
 2. **Holylabs file quota:** does konkle_lab hit the same ~1M-file limit (ask FASRC for current usage)? Are members
    keeping `.venv`s, conda envs or uv caches on holylabs that should move to netscratch?
 3. **Netscratch layout:** is `/n/netscratch/konkle_lab/Lab/$USER` the right place for personal venvs, uv cache and
