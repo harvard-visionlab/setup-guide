@@ -75,8 +75,8 @@ cat <<'EOF' | ssh -o BatchMode=yes <alias> 'mkdir -p /n/netscratch/<lab>/Lab/$US
 #!/bin/bash
 #SBATCH --job-name=<name>
 #SBATCH --partition=shared
-#SBATCH --cpus-per-task=8
-#SBATCH --mem=16G
+#SBATCH --cpus-per-task=1      # more only for code that runs in parallel (see below)
+#SBATCH --mem=8G
 #SBATCH --time=01:00:00
 #SBATCH --output=/n/netscratch/<lab>/Lab/<user>/logs/<name>-%j.out
 set -eo pipefail
@@ -86,6 +86,18 @@ uv sync --frozen        # repairs a venv the netscratch purge ate; no-op otherwi
 uv run python ...
 EOF
 ```
+- **Decide the core count per job, before submitting: what in this script runs in parallel?** Request that many
+  cores, no more. FASRC's Job Defense Shield emails the PI about `shared` jobs whose CPU use is about
+  100% / cores (a 16-core hashing job that used 5% got flagged).
+  - **I/O-bound or serial: 1-2 cores.** Syncs, copies, hashing and verify loops, `du`/inode scans, `uv`/`git` steps.
+    Measured: such jobs used 0.4-5.6% of 8-16 cores; they wait on lab_storage/netscratch, so more cores can't help
+    (more parallel streams might, e.g. s5cmd `--numworkers`).
+  - **Really parallel: N cores** where N matches the workers: test suites run with N workers, native builds with
+    `make -j N`, s5cmd or xargs `-P N`.
+  - Memory is requested separately (`--mem`); extra memory needs no extra cores.
+  - GPU jobs: cores come with the GPUs (e.g. 24 per H100, used by data loaders). The emails are about `shared`.
+  - **After a new kind of job's first run, check `jobstats <id>`** (or `sacct -j <id> -o Elapsed,TotalCPU`; with
+    `-u`/date ranges, sum TotalCPU over the job's steps, as the allocation line shows 0) and size the next one from it.
 - Quote the heredoc (`<<'EOF'`) so `$VARS` expand on the cluster, not the laptop. `#SBATCH` lines don't expand
   variables: use literal paths.
 - Chain dependent work with `--dependency=afterok:<id>` (`afterany` to run regardless). Change a queued job with

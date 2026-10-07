@@ -68,14 +68,14 @@ keep a backup):
 
 ```bash
 cd $PROJECT_DIR/setup-guide && git pull --ff-only
-for lab in alvarez_lab konkle_lab; do
+for lab in alvarez_lab; do   # konkle_lab: pending, see konkle-lab-notes.md
   f=/n/holylabs/LABS/$lab/Lab/setup/lab_env.sh
   mkdir -p "$(dirname "$f")"
   [ -f "$f" ] && cp -p "$f" "$f.bak-$(date +%Y%m%d-%H%M)"
   install -m 664 scripts/cluster/lab_env.sh "$f"
 done
 # check it sources cleanly under strict mode
-for lab in alvarez_lab konkle_lab; do LAB=$lab bash -eu -c ". /n/holylabs/LABS/$lab/Lab/setup/lab_env.sh && echo $lab ok"; done
+for lab in alvarez_lab; do LAB=$lab bash -eu -c ". /n/holylabs/LABS/$lab/Lab/setup/lab_env.sh && echo $lab ok"; done
 ```
 
 ## 3. Login nodes vs jobs
@@ -86,6 +86,11 @@ Login nodes: editing, git, `squeue`/`sacct`/`sbatch`, reading logs, small checks
 Partitions: `shared` (CPU jobs; starts quickly), `test` (12 h, near-immediate start), `gpu_test` (MIG slices, smoke
 tests), Kempner partitions for training (section 5).
 
+Request only the cores a job uses in parallel: FASRC's Job Defense Shield emails the PI about `shared` jobs whose CPU
+use is about 100% / cores. I/O-bound jobs (syncs, copies, hashing, scans, `uv`/`git`) need 1-2 cores; measured ones
+used 0.4-5.6% of 8-16 cores. Builds and test suites get as many as they run in parallel. Check a new kind of job
+afterwards with `jobstats <id>`.
+
 ## 4. libjpeg-turbo (slipstream's JPEG decoder)
 
 FASRC (Rocky 8) has libjpeg-turbo 1.5.3's classic `libjpeg.so.62` but **not** the TurboJPEG API
@@ -94,12 +99,8 @@ without it (earlier versions silently installed without the decoder) and searche
 and `~/.local` (lib and lib64). No nasm module exists, so a plain cmake build has no SIMD (slow decode).
 
 **Alvarez lab build** (2026-09-30, job 49429014, ctest 207/207): `/n/lab_storage/alvarez_lab/Lab/sw/libjpeg-turbo-3.0.4`
-(`lib64/libturbojpeg.so.0`, `include/turbojpeg.h`, SIMD required; `BUILD_INFO` in the prefix). Konkle lab: not built
-yet; lab_storage is group-only, so run the script with `LAB=konkle_lab`:
-
-```bash
-cd /n/netscratch/konkle_lab/Lab/$USER && LAB=konkle_lab sbatch $PROJECT_DIR/setup-guide/scripts/cluster/build_libjpeg_turbo.sh
-```
+(`lib64/libturbojpeg.so.0`, `include/turbojpeg.h`, SIMD required; `BUILD_INFO` in the prefix). Konkle lab: not built;
+lab_storage is group-only, so it would need its own copy. Pending Konkle's agreement: see [Konkle lab notes](konkle-lab-notes.md).
 
 The script builds nasm for the build only, uses `module load cmake/3.31.6-fasrc01`, and refuses to overwrite a
 prefix. **The prefix must never move**: the decoder is rpath-linked to it. `lab_env.sh` sets `TURBOJPEG_ROOT` when
