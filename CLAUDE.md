@@ -50,7 +50,7 @@ We are building a comprehensive setup guide covering multiple environments (Harv
 |---------|------|-----------------|---------|
 | Home | `~/` | 100GB limit, persistent | Config files, symlinks only |
 | Holylabs | `/n/holylabs/LABS/${LAB}/Users/$USER/` | Persistent, **~1M-file group quota** (never raised) | Code only; no venvs/caches/conda |
-| Netscratch | `/n/netscratch/${LAB}/Lab/$USER/` (`$LAB_SCRATCH`) | Free, large, fast, ephemeral | venvs, uv cache, scratch |
+| Netscratch | `/n/netscratch/${LAB}/Lab/$USER/` (`$MY_NETSCRATCH`) | Free, large, fast, ephemeral | venvs, uv cache, scratch |
 | Lab storage | `/n/lab_storage/${LAB}/Lab/` (`$LAB_STORAGE`) | Persistent, ~8TB, slow NFS (can't host venvs) | Datasets, lab software (`sw/`) |
 
 Tier1 (`/n/alvarez_lab_tier1`) no longer exists; replaced by lab_storage.
@@ -71,8 +71,8 @@ lab_storage: separate NFS server (slow)
 
 `~/.bashrc` sets `LAB` and sources `/n/holylabs/LABS/${LAB}/Lab/setup/lab_env.sh` (source: `scripts/cluster/lab_env.sh`;
 deploy steps in `docs/cluster-reference.md` §2; never edit the deployed copy). It sets the storage vars,
-`UV_CACHE_DIR=$LAB_SCRATCH/uv-cache`, `TURBOJPEG_ROOT`, `FFMPEG_ROOT` (+PATH/LD_LIBRARY_PATH), and wraps `uv` so a git
-checkout on holylabs uses `$LAB_SCRATCH/venvs/<repo>` instead of `.venv` (`lab_venv` prints it).
+`UV_CACHE_DIR=$MY_NETSCRATCH/uv-cache`, `TURBOJPEG_ROOT`, `FFMPEG_ROOT` (+PATH/LD_LIBRARY_PATH), and wraps `uv` so a git
+checkout on holylabs uses `$MY_NETSCRATCH/venvs/<repo>` instead of `.venv` (`lab_venv` prints it).
 
 ### Jupyter Kernel
 

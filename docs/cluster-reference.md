@@ -17,10 +17,10 @@ This repo is the source of truth for:
 | what | where | why |
 |---|---|---|
 | code checkouts | `$PROJECT_DIR` = `/n/holylabs/LABS/$LAB/Users/$USER/Projects` | durable, small |
-| **Python venvs** | `$LAB_SCRATCH/venvs/<repo>` = `/n/netscratch/$LAB/Lab/$USER/venvs/<repo>` | holylabs **file** quota (below) |
-| **uv cache** | `$LAB_SCRATCH/uv-cache` (`UV_CACHE_DIR`) | same filesystem as the venvs: uv hard-links (verified), so a venv costs no extra bytes or inodes |
+| **Python venvs** | `$MY_NETSCRATCH/venvs/<repo>` = `/n/netscratch/$LAB/Lab/$USER/venvs/<repo>` | holylabs **file** quota (below) |
+| **uv cache** | `$MY_NETSCRATCH/uv-cache` (`UV_CACHE_DIR`) | same filesystem as the venvs: uv hard-links (verified), so a venv costs no extra bytes or inodes |
 | datasets, lab software | `$LAB_STORAGE` = `/n/lab_storage/$LAB/Lab` | durable lab storage (8 TB NFS; the old "tier1" moved here) |
-| run dirs, logs, temp | `$LAB_SCRATCH` | fast scratch; final outputs go to S3 |
+| run dirs, logs, temp | `$MY_NETSCRATCH` | fast scratch; final outputs go to S3 |
 | lab shell setup | `/n/holylabs/LABS/$LAB/Lab/setup/lab_env.sh` | one file, sourced from `~/.bashrc` |
 
 **The holylabs quota is on files (inodes), not bytes.** `alvarez_lab`: ~1.05M files (FASRC: "we do not increase
@@ -48,12 +48,17 @@ lab_storage is durable but slow: ~50 MB/s per stream, ~115 MB/s max. S3 from the
 
 ## 2. `lab_env.sh`
 
-Sets `LAB` (default `alvarez_lab`), the storage variables (`MY_WORK_DIR`, `LAB_SCRATCH`/`MY_NETSCRATCH`,
+Sets `LAB` (default `alvarez_lab`), the storage variables (`MY_WORK_DIR`, `MY_NETSCRATCH` (per user; old name `LAB_SCRATCH`),
 `LAB_NETSCRATCH`, `LAB_STORAGE`, `PROJECT_DIR`, `BUCKET_DIR`, `SANDBOX_DIR`), `UV_CACHE_DIR`, `UV_TOOL_DIR`,
 `TURBOJPEG_ROOT` (if the lab's build exists), and wraps `uv` so that inside any git checkout on holylabs the venv is
-`$LAB_SCRATCH/venvs/<repo name>` automatically. An explicit `UV_PROJECT_ENVIRONMENT` wins; two checkouts with one
+`$MY_NETSCRATCH/venvs/<repo name>` automatically. An explicit `UV_PROJECT_ENVIRONMENT` wins; two checkouts with one
 repo name share a venv. `lab_venv` prints the path (for VS Code / Jupyter kernels). Tools that look for a literal
 `.venv` need `uv run ...` or that path. Safe under `set -eu`.
+
+It also defines `mr` (the model-rearing CLI): inside a git checkout it runs that checkout's own `mr`
+(`$(lab_venv)/bin/mr`; each lab project's venv has model-rearing plus its own plugins), outside a checkout
+model-rearing's venv. It calls the binary directly (no uv: no sync, no login-node lock hang). An `alias mr=...` in
+`~/.bashrc` overrides it: remove the alias.
 
 Known issues:
 - `uv run` can hang on a file lock on the login node (NFS locking). In jobs, `uv sync --frozen` first or call

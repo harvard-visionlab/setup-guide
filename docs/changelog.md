@@ -4,6 +4,49 @@ Updates to the setup guides. If you've already completed setup, check here for c
 
 ---
 
+## 2026-11-18: `MY_NETSCRATCH`, and an `mr` command in `lab_env.sh`
+
+### What Changed
+
+1. **Your netscratch directory is `$MY_NETSCRATCH`** (`/n/netscratch/${LAB}/Lab/$USER`), the documented name from now
+   on. `$LAB_SCRATCH` is the same directory and still works, but read like a folder shared by the lab, which it isn't
+   (`MY_*` = yours, `LAB_*` = shared).
+2. **`mr` (model-rearing CLI) is defined by `lab_env.sh`:** inside a repo it runs that repo's own `mr`, outside any
+   repo model-rearing's.
+
+### How to Update
+
+- If your `~/.bashrc` has `alias mr=...`, delete it (an alias overrides the new `mr`), then `source ~/.bashrc`.
+- In your own scripts, switch `$LAB_SCRATCH` to `$MY_NETSCRATCH` when convenient.
+
+---
+
+## 2026-10-26: Lab repos over https with the GitHub CLI
+
+### What Changed
+
+The lab standard for fetching repos (clone, pull, and uv installing git dependencies) is **https, authenticated by the
+GitHub CLI** (`gh`), on every machine: laptop, cluster, workstations. Dependency pins in `pyproject.toml` use
+`git+https://github.com/harvard-visionlab/<repo>.git` for all lab repos. ssh keys are now optional.
+
+### Why
+
+Most `harvard-visionlab` repos are private. With ssh, every user needs a key on every machine (a key per user per GPU
+workstation). `gh auth login` + `gh auth setup-git` is one login per machine, and on the cluster compute nodes share
+`$HOME`, so jobs inherit it.
+
+### How to Update
+
+On each machine you use:
+
+- **Laptop:** `brew install gh`, then `gh auth login -h github.com -p https -w` and `gh auth setup-git`
+  ([guide](laptop-macos.md#4-configure-git)).
+- **Cluster:** install `gh` into `~/.local/bin`, then the same two commands ([guide](harvard-cluster.md#github-access)).
+
+Check: `GIT_TERMINAL_PROMPT=0 git ls-remote https://github.com/harvard-visionlab/model-evals.git` prints a hash.
+
+---
+
 ## 2026-09-30: Python environments move to netscratch; `lab_env.sh`
 
 ### What Changed

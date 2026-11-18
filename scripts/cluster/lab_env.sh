@@ -9,14 +9,14 @@
 # Why: holylabs has a group FILE quota (~1M inodes per lab, never raised). A single Python venv is 25-60k files,
 # so venvs and the uv cache live on netscratch (fast, no small lab quota; files unused ~90 days are purged, and a
 # venv rebuilds exactly from uv.lock with `uv sync --frozen`). Code stays on holylabs.
-# Safe under `set -e` / `set -u`.
+# Safe under `set -e` / `set -u`. Per-user scratch is $MY_NETSCRATCH ($LAB_SCRATCH is the old name).
 
 export LAB="${LAB:-alvarez_lab}"
 
 # Storage roots
 export MY_WORK_DIR="/n/holylabs/LABS/$LAB/Users/$USER"   # code (inode quota: no venvs/caches here)
-export LAB_SCRATCH="/n/netscratch/$LAB/Lab/$USER"         # venvs, uv cache, run dirs, temp (90-day purge)
-export MY_NETSCRATCH="$LAB_SCRATCH"                       # older name, same dir
+export MY_NETSCRATCH="/n/netscratch/$LAB/Lab/$USER"       # yours (per user): venvs, uv cache, run dirs, temp (90-day purge)
+export LAB_SCRATCH="$MY_NETSCRATCH"                       # old name, same dir: kept for scripts that use it
 export LAB_NETSCRATCH="/n/netscratch/$LAB/Everyone"       # lab-shared scratch (e.g. ~/.lightning)
 export LAB_STORAGE="/n/lab_storage/$LAB/Lab"              # durable lab NFS (datasets, lab software); slow
 
@@ -26,18 +26,27 @@ export BUCKET_DIR="$MY_WORK_DIR/Buckets"     # S3 bucket mounts
 export SANDBOX_DIR="$MY_WORK_DIR/Sandbox"    # testing/scratch
 
 # uv
-export UV_CACHE_DIR="$LAB_SCRATCH/uv-cache"   # same filesystem as the venvs: uv hard-links, no copies
+export UV_CACHE_DIR="$MY_NETSCRATCH/uv-cache"   # same filesystem as the venvs: uv hard-links, no copies
 export UV_TOOL_DIR="$MY_WORK_DIR/.uv_tools"   # a few small CLI tools (s5cmd); must survive the purge
 
-# `uv` inside a git checkout on holylabs uses $LAB_SCRATCH/venvs/<repo name> instead of <repo>/.venv.
-# (An explicit UV_PROJECT_ENVIRONMENT wins. Two checkouts of one repo name share that venv.)
+# Venv of the git checkout containing the current dir: $MY_NETSCRATCH/venvs/<repo name> for checkouts on holylabs,
+# <repo>/.venv elsewhere. An explicit UV_PROJECT_ENVIRONMENT wins. Two checkouts of one repo name share that venv.
+_lab_venv_for() {  # <checkout top>
+  if [ -n "${UV_PROJECT_ENVIRONMENT:-}" ]; then echo "$UV_PROJECT_ENVIRONMENT"; return; fi
+  case "$(readlink -f "$1" 2>/dev/null)" in
+    /n/holylabs/*) echo "$MY_NETSCRATCH/venvs/$(basename "$1")" ;;
+    *) echo "$1/.venv" ;;
+  esac
+}
+
+# `uv` inside a git checkout on holylabs uses $MY_NETSCRATCH/venvs/<repo name> instead of <repo>/.venv.
+# (Elsewhere uv keeps its default, the project's .venv.)
 uv() {
-  if [ -z "${UV_PROJECT_ENVIRONMENT:-}" ]; then
-    local top
-    top=$(git rev-parse --show-toplevel 2>/dev/null) || top=""  # not in a checkout: fine under set -e
-    case "$(readlink -f "${top:-/nonexistent}" 2>/dev/null)" in
+  local top
+  if [ -z "${UV_PROJECT_ENVIRONMENT:-}" ] && top=$(git rev-parse --show-toplevel 2>/dev/null); then
+    case "$(readlink -f "$top" 2>/dev/null)" in
       /n/holylabs/*)
-        UV_PROJECT_ENVIRONMENT="$LAB_SCRATCH/venvs/$(basename "$top")" command uv "$@"
+        UV_PROJECT_ENVIRONMENT="$(_lab_venv_for "$top")" command uv "$@"
         return ;;
     esac
   fi
@@ -47,7 +56,22 @@ uv() {
 # `lab_venv`: print the venv the current checkout uses (for VS Code / Jupyter kernel paths).
 lab_venv() {
   local top; top=$(git rev-parse --show-toplevel 2>/dev/null) || { echo "not in a git checkout" >&2; return 1; }
-  echo "${UV_PROJECT_ENVIRONMENT:-$LAB_SCRATCH/venvs/$(basename "$top")}"
+  _lab_venv_for "$top"
+}
+
+# `mr` (model-rearing CLI): the current checkout's own mr (each lab project venv has model-rearing plus its plugins);
+# outside a checkout, model-rearing's venv. Runs the venv's binary directly: no uv, so no sync or install, and no
+# NFS lock hang on the login node. Replaces `alias mr=...` (remove that alias: an alias overrides this function).
+function mr {
+  local top venv
+  if top=$(git rev-parse --show-toplevel 2>/dev/null); then
+    venv=$(_lab_venv_for "$top")
+    [ -x "$venv/bin/mr" ] || { echo "mr: no $venv/bin/mr (run 'uv sync' for $(basename "$top") in a job)" >&2; return 127; }
+  else
+    venv="$MY_NETSCRATCH/venvs/model-rearing"
+    [ -x "$venv/bin/mr" ] || { echo "mr: not in a git checkout, and no $venv/bin/mr" >&2; return 127; }
+  fi
+  "$venv/bin/mr" "$@"
 }
 
 # Lab-wide libjpeg-turbo with SIMD (TurboJPEG API) for slipstream's JPEG decoder: building slipstream (uv sync)

@@ -77,7 +77,7 @@ After installation:
 
 ### 3. Set Up SSH Keys
 
-SSH keys let you access private repositories without entering your password each time.
+SSH keys let you push and pull over ssh and log in to other machines without a password. Fetching lab repos uses https + the GitHub CLI instead (step 4), so this step is optional for that.
 
 **Check for existing keys:**
 
@@ -149,6 +149,24 @@ Set the default branch name to `main`:
 
 ```bash
 git config --global init.defaultBranch main
+```
+
+Log in to GitHub with the GitHub CLI, so git can fetch the lab's private repos over https. This needs Homebrew
+(see [Homebrew](#homebrew) below; install it first if you don't have it):
+
+```bash
+brew install gh
+gh auth login -h github.com -p https -w   # opens a browser; log in and approve
+gh auth setup-git                          # git (and uv) use gh for github.com credentials
+```
+
+Lab repos are cloned and installed over **https**, authenticated by the GitHub CLI (`gh`). Write lab dependencies
+in `pyproject.toml` as `git+https://github.com/harvard-visionlab/<repo>.git`.
+
+Check it works:
+
+```bash
+GIT_TERMINAL_PROMPT=0 git ls-remote https://github.com/harvard-visionlab/model-evals.git | head -1
 ```
 
 Verify your configuration:
@@ -244,7 +262,7 @@ When you clone lab repositories:
 
 ```bash
 cd ~/Work/Projects
-git clone git@github.com:harvard-visionlab/some-project.git
+git clone https://github.com/harvard-visionlab/some-project.git
 ```
 
 ---

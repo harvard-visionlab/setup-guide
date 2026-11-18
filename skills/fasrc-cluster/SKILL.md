@@ -21,6 +21,9 @@ measurements in its `docs/cluster-reference.md`. Read that before changing anyth
   `srun --jobid=<id> --overlap --ntasks=1 <cmd>` (runs inside the allocation, sees its GPUs and CPUs).
 - Move code by **git only**: commit and push on the laptop, `git pull` in the cluster checkout. Exception: scratch
   scripts piped to sbatch.
+- Lab repos (most are private) are fetched over **https**, authenticated by the GitHub CLI (`gh auth login`, then
+  `gh auth setup-git`; compute nodes share `$HOME`). If an https clone or a uv git dependency asks for a password,
+  `gh auth setup-git` (or the login) is missing on that machine. Pins: `git+https://github.com/harvard-visionlab/<repo>.git`.
 
 ## 2. The login node is shared: light work only
 
@@ -33,7 +36,7 @@ a datasets dir ran > 60 s), benchmarks, training. Submit a job instead (`shared`
 | what | where | notes |
 |---|---|---|
 | code checkouts | `$PROJECT_DIR` = `/n/holylabs/LABS/$LAB/Users/$USER/Projects` | group **inode** quota (~1M files per lab, never raised): no venvs, caches, conda envs or many-small-file outputs here |
-| venvs, uv cache, run dirs, build logs | `$LAB_SCRATCH` = `/n/netscratch/$LAB/Lab/$USER` | fast VAST; 50 TB per lab; **purged by mtime after 90 days**, and touching files to dodge that is forbidden. Rebuild instead (`uv sync --frozen`) |
+| venvs, uv cache, run dirs, build logs | `$MY_NETSCRATCH` = `/n/netscratch/$LAB/Lab/$USER` | fast VAST; 50 TB per lab; **purged by mtime after 90 days**, and touching files to dodge that is forbidden. Rebuild instead (`uv sync --frozen`) |
 | datasets, lab software | `$LAB_STORAGE` = `/n/lab_storage/$LAB/Lab` | durable NFS but slow: ~50 MB/s per stream, ~115 MB/s max; can't host venvs |
 | outputs (weights, results) | S3 (`s3://visionlab-members/$USER/...`) | from the cluster ~15-50 MB/s; use `s5cmd` |
 | home | `$HOME` | 100 GB, slow; config only |
@@ -45,9 +48,11 @@ a datasets dir ran > 60 s), benchmarks, training. Submit a job instead (`shared`
 ## 4. Shell environment: `lab_env.sh`
 
 `/n/holylabs/LABS/$LAB/Lab/setup/lab_env.sh` (sourced from `~/.bashrc` after `export LAB=...`) sets the storage vars
-above, `UV_CACHE_DIR=$LAB_SCRATCH/uv-cache`, `TURBOJPEG_ROOT` (if the lab built libjpeg-turbo), and wraps `uv` so
-that inside any git checkout on holylabs the venv is `$LAB_SCRATCH/venvs/<repo name>` (not `.venv`). `lab_venv`
-prints that path (for VS Code / Jupyter). An explicit `UV_PROJECT_ENVIRONMENT` wins.
+above, `UV_CACHE_DIR=$MY_NETSCRATCH/uv-cache`, `TURBOJPEG_ROOT` / `FFMPEG_ROOT` (if the lab built them), and wraps `uv` so
+that inside any git checkout on holylabs the venv is `$MY_NETSCRATCH/venvs/<repo name>` (not `.venv`). `lab_venv`
+prints that path (for VS Code / Jupyter). An explicit `UV_PROJECT_ENVIRONMENT` wins. `$MY_NETSCRATCH` is per user
+(old name `LAB_SCRATCH` still set). `mr` runs the current checkout's `$(lab_venv)/bin/mr` (outside a
+checkout: model-rearing's), without uv, so it's safe on the login node.
 
 - Non-interactive ssh and jobs may not read `.bashrc`: **source it explicitly** in every job script and remote
   command: `export LAB=<lab>; . /n/holylabs/LABS/$LAB/Lab/setup/lab_env.sh`. It is `set -eu` safe.
@@ -103,7 +108,7 @@ EOF
 - Chain dependent work with `--dependency=afterok:<id>` (`afterany` to run regardless). Change a queued job with
   `scontrol update JobId=<id> Dependency=afterany:<id>`.
 - **Never let two jobs `uv sync` the same venv (or share a uv cache) at once** on NFS: chain them. For one-off
-  package versions, make a separate venv: `uv venv $LAB_SCRATCH/venvs/<name>; VIRTUAL_ENV=... uv pip install ...`.
+  package versions, make a separate venv: `uv venv $MY_NETSCRATCH/venvs/<name>; VIRTUAL_ENV=... uv pip install ...`.
 - `uv run` can hang on a file lock on the login node (NFS locking). In jobs, `uv sync --frozen` first, or call
   `$(lab_venv)/bin/<tool>` directly.
 - uv caches git checkouts of git dependencies: a native extension built once is not rebuilt when its build env

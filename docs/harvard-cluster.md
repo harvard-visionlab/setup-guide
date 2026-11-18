@@ -25,7 +25,7 @@ This guide covers setting up your computing environment on the Harvard FASRC clu
     -   [Basic S3 Operations](#3-basic-s3-operations)
     -   [Python Access (fsspec)](#4-python-access-fsspec)
     -   [Mounting S3 Buckets (rclone)](#5-mounting-s3-buckets-rclone)
--   [GitHub SSH Setup](#github-ssh-setup) *(TODO)*
+-   [GitHub Access](#github-access)
 -   [VS Code Remote Access](#vs-code-remote-access) *(TODO)*
 -   [Quick Reference](#quick-reference)
 -   [Summary](#summary)
@@ -123,8 +123,7 @@ source ~/.bashrc
 | ----------------------- | ---------------------------------------------------- |
 | `LAB`                   | Your lab affiliation, used in storage paths          |
 | `MY_WORK_DIR`           | Your holylabs directory working directory            |
-| `LAB_SCRATCH`           | Your netscratch directory (venvs, caches, temp; 90-day purge) |
-| `MY_NETSCRATCH`         | Same as `LAB_SCRATCH` (older name)                   |
+| `MY_NETSCRATCH`        | **Your own** netscratch directory (venvs, caches, temp; 90-day purge). Old name: `LAB_SCRATCH` |
 | `LAB_NETSCRATCH`        | Shared lab netscratch (for shared caches like litdata) |
 | `LAB_STORAGE`           | Lab storage (shared datasets, lab software; persistent, slow) |
 | `PROJECT_DIR`           | Where your git repos live                            |
@@ -137,7 +136,7 @@ source ~/.bashrc
 | `AWS_SECRET_ACCESS_KEY` | Your AWS secret key (get from George)                |
 | `AWS_DEFAULT_REGION`    | AWS region (us-east-1)                               |
 
-`lab_env.sh` also wraps the `uv` command: inside a git repo on holylabs, the project's virtual environment goes to `$LAB_SCRATCH/venvs/<repo name>` instead of `<repo>/.venv`. Run `lab_venv` inside a repo to print where its environment is.
+`lab_env.sh` also wraps the `uv` command: inside a git repo on holylabs, the project's virtual environment goes to `$MY_NETSCRATCH/venvs/<repo name>` instead of `<repo>/.venv`. Run `lab_venv` inside a repo to print where its environment is.
 
 ### 2. Verify Storage Access
 
@@ -239,8 +238,8 @@ conda env list
 rm -rf ~/.conda
 
 # Create symlink to netscratch
-mkdir -p $LAB_SCRATCH/.conda
-ln -s $LAB_SCRATCH/.conda ~/.conda
+mkdir -p $MY_NETSCRATCH/.conda
+ln -s $MY_NETSCRATCH/.conda ~/.conda
 
 # Recreate environments from exported files:
 # conda env create -f myenv.yml
@@ -302,7 +301,7 @@ echo $UV_CACHE_DIR
 # Should show: /n/netscratch/<your-lab>/Lab/<your-username>/uv-cache
 ```
 
-**Why netscratch?** The uv cache and your project virtual environments (`$LAB_SCRATCH/venvs/<repo>`) both live on netscratch, the same filesystem. This allows uv to use hardlinks instead of copying files, which means:
+**Why netscratch?** The uv cache and your project virtual environments (`$MY_NETSCRATCH/venvs/<repo>`) both live on netscratch, the same filesystem. This allows uv to use hardlinks instead of copying files, which means:
 
 -   Near-instant package installation after the first download
 -   Multiple projects sharing the same packages use almost no extra disk space or files
@@ -334,7 +333,7 @@ The project will contain:
 -   `pyproject.toml` — project metadata and dependencies
 -   `uv.lock` — exact versions for reproducibility
 
-The virtual environment is **not** in the project folder: `lab_env.sh` puts it at `$LAB_SCRATCH/venvs/test-project`. Check with:
+The virtual environment is **not** in the project folder: `lab_env.sh` puts it at `$MY_NETSCRATCH/venvs/test-project`. Check with:
 
 ```bash
 lab_venv
@@ -356,7 +355,7 @@ This should be much faster because uv hardlinks from the cache instead of re-dow
 Verify hardlinks are working by comparing disk usage:
 
 ```bash
-du -sh $LAB_SCRATCH/venvs/test-project*
+du -sh $MY_NETSCRATCH/venvs/test-project*
 ```
 
 You should see something like:
@@ -415,13 +414,13 @@ uv add ipykernel
 3. Select "Python (uv auto)" as the kernel
 4. The kernel will automatically use the project's environment
 
-**How it works:** The kernel runs `uv run`, which searches upward from the notebook's location to find a `pyproject.toml`. It then activates that project's environment (`lab_env.sh` points it at `$LAB_SCRATCH/venvs/<repo>`).
+**How it works:** The kernel runs `uv run`, which searches upward from the notebook's location to find a `pyproject.toml`. It then activates that project's environment (`lab_env.sh` points it at `$MY_NETSCRATCH/venvs/<repo>`).
 
 ### 6. Clean Up Test Projects
 
 ```bash
 rm -rf $SANDBOX_DIR/test-project $SANDBOX_DIR/test-project-2
-rm -rf $LAB_SCRATCH/venvs/test-project $LAB_SCRATCH/venvs/test-project-2
+rm -rf $MY_NETSCRATCH/venvs/test-project $MY_NETSCRATCH/venvs/test-project-2
 ```
 
 ### 7. After the Netscratch Purge, and in Jobs
@@ -844,14 +843,13 @@ For new code, prefer **fsspec** (section 4) - it's simpler and doesn't require m
 ```bash
 $LAB                    # Your lab: alvarez_lab or konkle_lab
 $MY_WORK_DIR            # /n/holylabs/LABS/${LAB}/Users/$USER
-$LAB_SCRATCH            # /n/netscratch/${LAB}/Lab/$USER (venvs, caches; 90-day purge)
-$MY_NETSCRATCH          # same as $LAB_SCRATCH
+$MY_NETSCRATCH          # /n/netscratch/${LAB}/Lab/$USER (venvs, caches; 90-day purge)
 $LAB_NETSCRATCH         # /n/netscratch/${LAB}/Everyone (shared)
 $LAB_STORAGE            # /n/lab_storage/${LAB}/Lab
 $PROJECT_DIR            # ${MY_WORK_DIR}/Projects
 $BUCKET_DIR             # ${MY_WORK_DIR}/Buckets
 $SANDBOX_DIR            # ${MY_WORK_DIR}/Sandbox
-$UV_CACHE_DIR           # ${LAB_SCRATCH}/uv-cache
+$UV_CACHE_DIR           # ${MY_NETSCRATCH}/uv-cache
 $UV_TOOL_DIR            # ${MY_WORK_DIR}/.uv_tools
 $AWS_ACCESS_KEY_ID      # Your AWS access key (keep secret!)
 $AWS_SECRET_ACCESS_KEY  # Your AWS secret key (keep secret!)
@@ -866,7 +864,7 @@ Summary of symlinks set up in [Initial Setup](#4-set-up-home-directory-symlinks)
 | -------------- | ------------------------------ | ----------------------------------------- |
 | `~/.cache`     | `$MY_NETSCRATCH/.cache`        | App caches (pip, huggingface, torch)      |
 | `~/.lightning` | `$LAB_NETSCRATCH/.lightning`   | StreamingDataset chunks (shared by lab)   |
-| `~/.conda`     | `$LAB_SCRATCH/.conda`          | Conda environments (if using conda)       |
+| `~/.conda`     | `$MY_NETSCRATCH/.conda`          | Conda environments (if using conda)       |
 
 Kept in home: `~/.ssh`, `~/.config`, `~/.bashrc`, `~/.jupyter`, `~/.nv`, `~/.triton` (small or critical)
 
@@ -906,27 +904,49 @@ uv sync
 
 ---
 
-## GitHub SSH Setup
+## GitHub Access
 
-> **TODO:** This section is a placeholder. Content coming soon.
+The cluster fetches lab repos (including private ones) over https, authenticated by the GitHub CLI (`gh`). One login
+per cluster account: compute nodes share your `$HOME`, so jobs use it too. Run these on the cluster.
 
-Set up SSH keys for accessing private GitHub repositories from the cluster.
+### Install the GitHub CLI
 
-### Generate SSH Key
+```bash
+GH_VERSION=2.103.2
+mkdir -p ~/.local/bin && cd /tmp
+curl -fsSL "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.tar.gz" | tar xz
+mv "gh_${GH_VERSION}_linux_amd64/bin/gh" ~/.local/bin/ && rm -rf "gh_${GH_VERSION}_linux_amd64"
+hash -r && gh --version
+```
 
-*Coming soon*
+### Log In
 
-### Add Key to GitHub
+```bash
+gh auth login -h github.com -p https -w
+```
 
-*Coming soon*
+It prints a one-time code: open https://github.com/login/device on your laptop, enter the code and approve. Then
+let git use it:
 
-### Configure SSH for GitHub
+```bash
+git config --global user.name "Your Name"
+git config --global user.email "your_email@example.com"
+git config --global init.defaultBranch main
+gh auth setup-git
+```
 
-*Coming soon*
+Lab repos are cloned and installed over **https**, authenticated by the GitHub CLI (`gh`). Write lab dependencies
+in `pyproject.toml` as `git+https://github.com/harvard-visionlab/<repo>.git`.
 
 ### Test Access
 
-*Coming soon*
+```bash
+GIT_TERMINAL_PROMPT=0 git ls-remote https://github.com/harvard-visionlab/model-evals.git | head -1
+```
+
+This should print a commit hash, not ask for a password.
+
+An ssh key for GitHub is optional (only if you want to push over ssh); it is not needed to clone or install.
 
 ---
 
@@ -962,14 +982,14 @@ You've now configured your Harvard cluster environment. Here's what you set up:
 
 -   **Home directory (`~/`)** - Your small login node home (100GB limit). We set up symlinks so large caches don't fill it up.
 -   **Holylabs (`$MY_WORK_DIR`)** - Your working directory for code and projects. Your git repos live here; nothing with lots of files (environments, caches).
--   **Netscratch (`$LAB_SCRATCH`)** - Fast, ephemeral storage for uv environments, caches and temporary files. Files unused for 90 days are purged - don't store anything irreplaceable here.
+-   **Netscratch (`$MY_NETSCRATCH`)** - Fast, ephemeral storage for uv environments, caches and temporary files. Files unused for 90 days are purged - don't store anything irreplaceable here.
 -   **Lab storage (`$LAB_STORAGE`)** - Persistent, slower storage for shared datasets and lab software.
 -   **S3 buckets** - Cloud storage for all outputs (model weights, results, figures). Accessible from anywhere, backed up, and easy to share.
 
 **Environment management:**
 
 -   **uv** is your Python environment manager (not conda). It's fast, creates reproducible lockfiles, and uses hardlinks for efficient disk usage.
--   Each project gets its own environment (on netscratch, at `$LAB_SCRATCH/venvs/<repo>`) with dependencies tracked in `pyproject.toml` and `uv.lock`.
+-   Each project gets its own environment (on netscratch, at `$MY_NETSCRATCH/venvs/<repo>`) with dependencies tracked in `pyproject.toml` and `uv.lock`.
 
 **Workflow:**
 
